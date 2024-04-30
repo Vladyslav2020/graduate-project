@@ -1,7 +1,9 @@
 import {TestStep} from "./TestStep";
+import {TestRun} from "./TestRun";
 
 export interface TestCase {
     id: string;
     title: string;
-    commands: TestStep[];
+    steps: TestStep[];
+    runs: TestRun[];
 }

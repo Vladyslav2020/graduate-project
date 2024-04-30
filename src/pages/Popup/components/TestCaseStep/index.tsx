@@ -6,7 +6,7 @@ import React from "react";
 import {FormControl, IconButton, InputLabel, MenuItem, Select, TableCell, TableRow, TextField} from "@mui/material";
 import ClearOutlinedIcon from '@mui/icons-material/ClearOutlined';
 import LocationSearchingIcon from '@mui/icons-material/LocationSearching';
-import {actionsDescriptors} from "../TestCaseSteps";
+import {actionsDescriptors, cellStyle, getActionDescriptor} from "../TestCaseSteps";
 
 
 type TestStepProps = {
@@ -57,10 +57,6 @@ export const TestCaseStep = ({
         handleStepEditing(testStep.id);
     }
 
-    const getActionDescriptor = (name) => {
-        return actionsDescriptors.find(actionsDescriptor => actionsDescriptor.name === name);
-    }
-
     return (
         <TableRow
             sx={{"&:last-child td, &:last-child th": {border: 0}}}
@@ -73,10 +69,13 @@ export const TestCaseStep = ({
                 component="th"
                 scope="row"
                 ref={setNodeRef}
+                style={cellStyle}
             >
-                <DragIndicatorIcon/>
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                    <DragIndicatorIcon/>
+                </div>
             </TableCell>
-            <TableCell>{!activated ? getActionDescriptor(testStep.name)?.label :
+            <TableCell style={cellStyle}>{!activated ? getActionDescriptor(testStep.name)?.label :
                 <FormControl fullWidth>
                     <InputLabel id="select-action-label">Action</InputLabel>
                     <Select
@@ -87,23 +86,23 @@ export const TestCaseStep = ({
                         onChange={handleActionChange}
                     >
                         {actionsDescriptors.map(actionDescriptor => <MenuItem key={actionDescriptor.name}
-                                                                             value={actionDescriptor.name}>{actionDescriptor.label}</MenuItem>)}
+                                                                              value={actionDescriptor.name}>{actionDescriptor.label}</MenuItem>)}
                     </Select>
                 </FormControl>
             }</TableCell>
-            <TableCell>
+            <TableCell style={cellStyle}>
                 {!activated ? testStep.element : <div style={{display: 'flex', alignItems: 'center'}}>
-                    <TextField value={testStep.element}
+                    <TextField value={testStep.element} style={{padding: '10px 5px'}}
                                onChange={handleElementChange}/>
                     {getActionDescriptor(testStep.name)?.elementType === 'html' &&
                         <IconButton onClick={handleLocatorEnable} color={locatorEnabled ? 'primary' : 'default'}
                                     size={'small'}><LocationSearchingIcon/></IconButton>}
                 </div>}
             </TableCell>
-            <TableCell>{!activated ? testStep.value : <TextField value={testStep.value}
-                                                                 onChange={handleValueChange}/>}</TableCell>
-            <TableCell onClick={handleRemove}><IconButton size='small'
-                                                          onClick={handleRemove}><ClearOutlinedIcon/></IconButton></TableCell>
+            <TableCell style={cellStyle}>{!activated ? testStep.value : <TextField value={testStep.value} style={{padding: '10px 5px'}}
+                                                                                   onChange={handleValueChange}/>}</TableCell>
+            <TableCell style={cellStyle} onClick={handleRemove}><IconButton size='small'
+                                                                            onClick={handleRemove}><ClearOutlinedIcon/></IconButton></TableCell>
         </TableRow>
     )
 }

@@ -16,6 +16,8 @@ import {
     Typography
 } from "@mui/material";
 import {TestCase} from "../../interfaces/TestCase";
+import {ADD_TEST_SUITE, RootState, SET_ACTIVE_TEST_CASE, SET_TEST_SUITES} from "../../redux/Reducers";
+import {useDispatch, useSelector} from "react-redux";
 
 type CommandType = {
     id: string;
@@ -24,20 +26,9 @@ type CommandType = {
 }
 
 export const TestSuites = () => {
-    const initialTestSuites = [
-        {
-            id: '1',
-            title: 'Test Suite 1',
-            testCases: [{id: '1', title: 'Test Case 1', commands: []}, {id: '2', title: 'Test Case 2', commands: []}]
-        },
-        {
-            id: '2',
-            title: 'Test Suite 2',
-            testCases: [{id: '3', title: 'Test Case 3', commands: []}, {id: '4', title: 'Test Case 4', commands: []}]
-        },
-    ];
-    const [testSuites, setTestSuites] = useState<TestSuite[]>(initialTestSuites);
-    const [expandedTestSuites, setExpandedTestSuites] = useState<string[]>(initialTestSuites.map(suite => suite.id));
+    const testSuites = useSelector((state: RootState) => state.root.testSuites);
+    const dispatch = useDispatch();
+    const [expandedTestSuites, setExpandedTestSuites] = useState<string[]>(testSuites.map(suite => suite.id));
     const [dialogOpen, setDialogOpen] = useState(false);
     const [inputValue, setInputValue] = useState('');
 
@@ -71,29 +62,36 @@ export const TestSuites = () => {
     };
 
     const handleAddTestSuite = () => {
-        setTestSuites([...testSuites, {
-            id: String(testSuites.length + 1),
-            title: inputValue,
-            testCases: []
-        }]);
+        dispatch({
+            type: ADD_TEST_SUITE, testSuite: {
+                id: String(testSuites.length + 1),
+                title: inputValue,
+                testCases: []
+            }
+        });
         setDialogOpen(false);
     }
 
     const handleAddTestCase = () => {
         const newTestSuites = testSuites.map(testSuite => {
             if (testSuite.id === activeItem?.id) {
+                const newTestCase: TestCase = {
+                    id: String(testSuite.testCases.length + 1),
+                    title: inputValue,
+                    steps: [],
+                    runs: [],
+                };
                 return {
                     ...testSuite,
-                    testCases: [...testSuite.testCases, {
-                        id: String(testSuite.testCases.length + 1),
-                        title: inputValue,
-                        commands: []
-                    }]
+                    testCases: [...testSuite.testCases, newTestCase]
                 };
             }
             return testSuite;
         });
-        setTestSuites(newTestSuites);
+        dispatch({
+            type: SET_TEST_SUITES,
+            testSuites: newTestSuites,
+        });
         setDialogOpen(false);
     }
 
@@ -107,7 +105,10 @@ export const TestSuites = () => {
             }
             return testSuite;
         });
-        setTestSuites(newTestSuites);
+        dispatch({
+            type: SET_TEST_SUITES,
+            testSuites: newTestSuites,
+        });
         setDialogOpen(false);
         setActiveItem(null);
     }
@@ -123,7 +124,10 @@ export const TestSuites = () => {
                 })
             };
         });
-        setTestSuites(newTestSuites);
+        dispatch({
+            type: SET_TEST_SUITES,
+            testSuites: newTestSuites,
+        });
         setDialogOpen(false);
         setActiveItem(null);
     };
@@ -146,14 +150,20 @@ export const TestSuites = () => {
         const newTestSuites = testSuites.map(testSuite => {
             return {...testSuite, testCases: testSuite.testCases.filter(testCase => testCase.id !== activeItem?.id)};
         });
-        setTestSuites(newTestSuites);
+        dispatch({
+            type: SET_TEST_SUITES,
+            testSuites: newTestSuites,
+        });
         setDialogOpen(false);
         setActiveItem(null);
     };
 
     const handleRemoveTestSuite = () => {
         const newTestSuites = testSuites.filter(testSuite => testSuite.id !== activeItem?.id);
-        setTestSuites(newTestSuites);
+        dispatch({
+            type: SET_TEST_SUITES,
+            testSuites: newTestSuites,
+        });
     }
 
     const handleClose = () => {
@@ -196,8 +206,16 @@ export const TestSuites = () => {
         }
     }
 
+    const setActiveTestCase = (testSuite, testCase) => {
+        dispatch({
+            type: SET_ACTIVE_TEST_CASE,
+            testSuite: testSuite,
+            testCase: testCase,
+        });
+    }
+
     return (
-        <div style={{padding: '20px', width: '280px'}}>
+        <div style={{padding: '20px', minWidth: '300px'}}>
             <div>
                 <div style={{
                     display: 'flex',
@@ -206,7 +224,7 @@ export const TestSuites = () => {
                     marginBottom: '20px'
                 }}>
                     <Typography>Test Suites</Typography>
-                    <Button variant="outlined" onClick={handleAddTestSuiteClick}>+ Test Suite</Button>
+                    <Button variant="outlined" size='small' onClick={handleAddTestSuiteClick}>+ Test Suite</Button>
                 </div>
                 <Dialog open={dialogOpen} onClose={handleCloseDialog}>
                     <DialogTitle>{command?.dialogTitle}</DialogTitle>
@@ -222,31 +240,39 @@ export const TestSuites = () => {
                 <div>
                     {testSuites.map((testSuite) => (
                         <div key={testSuite.id} style={{marginBottom: '10px'}}>
-                            <div style={{display: 'flex', alignItems: 'center'}}>
-                                <IconButton size='small' sx={{borderRadius: '5px'}}
-                                            onClick={() => toggleTestSuite(testSuite.id)}>
-                                    {expandedTestSuites.includes(testSuite.id) ? <KeyboardArrowDownRoundedIcon/> :
-                                        <ChevronRightRoundedIcon/>}
+                            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid black'}}>
+                                <div style={{display: 'flex', alignItems: 'center'}}>
+                                    <IconButton size='small' onClick={() => toggleTestSuite(testSuite.id)}>
+                                        {expandedTestSuites.includes(testSuite.id) ? <KeyboardArrowDownRoundedIcon/> :
+                                            <ChevronRightRoundedIcon/>}
+                                    </IconButton>
                                     <Typography> {testSuite.title}</Typography>
-                                </IconButton>
-                                <Button variant="outlined" onClick={() => handleAddTestCaseClick(testSuite)}>+ Test
-                                    Case</Button>
-                                <IconButton
-                                    onClick={(event) => handleMoreTestSuiteOptionsClick(event, testSuite)}><MoreVertRoundedIcon/></IconButton>
+                                </div>
+                                <div>
+                                    <Button size='small' variant="outlined"
+                                            onClick={() => handleAddTestCaseClick(testSuite)}>+ Test Case</Button>
+                                    <IconButton style={{marginLeft: '10px'}}
+                                                onClick={(event) => handleMoreTestSuiteOptionsClick(event, testSuite)}>
+                                        <MoreVertRoundedIcon/>
+                                    </IconButton>
+                                </div>
                             </div>
                             {expandedTestSuites.includes(testSuite.id) && (
-                                <div style={{marginLeft: '20px'}}>
+                                <div style={{marginLeft: '50px'}}>
                                     {testSuite.testCases.map((testCase) => (
-                                        <div key={testCase.id} style={{
+                                        <Button key={testCase.id} component='div' onClick={() => setActiveTestCase(testSuite, testCase)} color='inherit' variant='text' sx={{
                                             display: 'flex',
+                                            paddingRight: '0',
+                                            width: '100%',
                                             justifyContent: 'space-between',
                                             alignItems: 'center',
-                                            marginBottom: '10px'
+                                            marginBottom: '10px',
+                                            textTransform: 'none',
                                         }}>
                                             <Typography>{testCase.title}</Typography>
                                             <IconButton
                                                 onClick={(event) => handleMoreTestCaseOptionsClick(event, testCase)}><MoreVertRoundedIcon/></IconButton>
-                                        </div>
+                                        </Button>
                                     ))}
                                     <Menu
                                         id="simple-menu"

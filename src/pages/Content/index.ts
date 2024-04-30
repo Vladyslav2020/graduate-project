@@ -6,6 +6,7 @@ import {
 } from "./modules/record/ActionHandler";
 import {Recorder} from "./modules/record/Recorder";
 import {locatorSelector} from "./modules/locator/LocatorSelector";
+import {testRunner} from "./modules/play/TestRunner";
 
 console.log('Content script works!');
 console.log('Must reload extension for modifications to take effect.');
@@ -27,6 +28,8 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
         locatorSelector.subscribe();
     } else if (message.command === 'disable-locator-selection') {
         locatorSelector.unsubscribe();
+    } else if (message.command === 'run-test') {
+        testRunner.runTestCase(message.testRun);
     }
 });
 
