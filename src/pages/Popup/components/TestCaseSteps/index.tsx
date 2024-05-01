@@ -2,31 +2,12 @@ import React, {useEffect, useState} from "react";
 import {closestCorners, DndContext, PointerSensor, useSensor, useSensors} from "@dnd-kit/core";
 import {arrayMove, SortableContext, verticalListSortingStrategy} from "@dnd-kit/sortable";
 import {TestCaseStep} from "../TestCaseStep";
-import {Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
+import {Button, Table, TableBody, TableHead, TableRow} from "@mui/material";
 import {TestStep} from "../../interfaces/TestStep";
 import {RootState, SET_TEST_STEPS} from "../../redux/Reducers";
 import {useDispatch, useSelector} from "react-redux";
-
-export const cellStyle = {
-    paddingTop: '0',
-    paddingBottom: '0',
-};
-
-export const actionsDescriptors = [
-    {name: 'open', label: 'Open', elementType: 'text'},
-    {name: 'click', label: 'Click', elementType: 'html'},
-    {name: 'pressKey', label: 'Press Key', elementType: 'html'},
-    {name: 'type', label: 'Type', elementType: 'html'},
-    {name: 'verifyValue', label: 'Verify Value', elementType: 'html'},
-    {name: 'verifyText', label: 'Verify Text', elementType: 'html'},
-    {name: 'verifyTitle', label: 'Verify Title', elementType: 'html'},
-    {name: 'verifyEditable', label: 'Verify Editable', elementType: 'html'},
-    {name: 'verifyVisible', label: 'Verify Visible', elementType: 'html'},
-];
-
-export const getActionDescriptor = (name) => {
-    return actionsDescriptors.find(actionsDescriptor => actionsDescriptor.name === name);
-}
+import {actionsDescriptors, generateUniqueId} from "../../utils";
+import {CustomTableCell} from "../CustomTableCell";
 
 export const TestCaseSteps = () => {
     const testCase = useSelector((state: RootState) => state.root.activeTestCase);
@@ -114,7 +95,7 @@ export const TestCaseSteps = () => {
                 dispatch({
                     type: SET_TEST_STEPS,
                     steps: [...steps, {
-                        id: String(steps?.length + 1),
+                        id: generateUniqueId(),
                         name: message.action,
                         element: message.element,
                         value: message.value
@@ -130,30 +111,45 @@ export const TestCaseSteps = () => {
         }
     }, [editingStep, locatorEnabled, setLocatorEnabled]);
 
+    const addTestStep = () => {
+        const steps = testCase?.steps as TestStep[];
+        dispatch({
+            type: SET_TEST_STEPS,
+            steps: [...steps, {
+                id: generateUniqueId(),
+                name: 'click',
+                element: '/html[1]/body[1]'
+            }]
+        });
+    }
+
     return (
-        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-            <Table sx={{minWidth: 650}} aria-label="commands table">
-                <TableHead>
-                    <TableRow>
-                        <TableCell style={cellStyle}>#</TableCell>
-                        <TableCell style={cellStyle}>Command</TableCell>
-                        <TableCell style={cellStyle}>Element</TableCell>
-                        <TableCell style={cellStyle}>Value</TableCell>
-                        <TableCell style={cellStyle}>Clear</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    <SortableContext items={testCase?.steps as TestStep[]} strategy={verticalListSortingStrategy}>
-                        {testCase?.steps.map((step) => (
-                            <TestCaseStep key={step.id} id={step.id} testStep={step} setTestStep={setTestStep}
-                                          locatorEnabled={step.id === editingStep && locatorEnabled}
-                                          onRemove={clearTestStep} handleStepEditing={handleStepEditing}
-                                          handleLocatorEnable={handleLocatorEnable}
-                                          activated={step.id === editingStep}/>
-                        ))}
-                    </SortableContext>
-                </TableBody>
-            </Table>
-        </DndContext>
-    )
+        <div>
+            <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+                <Table sx={{minWidth: 650}} aria-label="commands table">
+                    <TableHead>
+                        <TableRow>
+                            <CustomTableCell>#</CustomTableCell>
+                            <CustomTableCell>Command</CustomTableCell>
+                            <CustomTableCell>Element</CustomTableCell>
+                            <CustomTableCell>Value</CustomTableCell>
+                            <CustomTableCell>Clear</CustomTableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        <SortableContext items={testCase?.steps as TestStep[]} strategy={verticalListSortingStrategy}>
+                            {testCase?.steps.map((step) => (
+                                <TestCaseStep key={step.id} id={step.id} testStep={step} setTestStep={setTestStep}
+                                              locatorEnabled={step.id === editingStep && locatorEnabled}
+                                              onRemove={clearTestStep} handleStepEditing={handleStepEditing}
+                                              handleLocatorEnable={handleLocatorEnable}
+                                              activated={step.id === editingStep}/>
+                            ))}
+                        </SortableContext>
+                    </TableBody>
+                </Table>
+            </DndContext>
+            <Button size='small' variant='outlined' sx={{marginTop: '5px'}} onClick={addTestStep}>+ Test Step</Button>
+        </div>
+    );
 }

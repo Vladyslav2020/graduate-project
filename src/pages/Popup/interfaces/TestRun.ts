@@ -4,8 +4,9 @@ export interface TestRun {
     steps: TestRunStep[];
     status: TestRunStatus;
     start: Date;
-    duration: number;
+    duration?: number;
     logs: string[];
+    screenshot?: string;
 }
 
 interface TestRunStep {

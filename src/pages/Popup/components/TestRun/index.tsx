@@ -7,7 +7,6 @@ import {
     DialogTitle,
     Table,
     TableBody,
-    TableCell,
     TableHead,
     TableRow,
     Typography
@@ -15,17 +14,19 @@ import {
 import HighlightOffRoundedIcon from '@mui/icons-material/HighlightOffRounded';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import PendingOutlinedIcon from '@mui/icons-material/PendingOutlined';
-import React, {useEffect, useState} from "react"
+import React, {useEffect} from "react"
 import {useDispatch, useSelector} from "react-redux";
 import {
     ADD_TEST_STEP_EXECUTION_RESULT,
+    CLOSE_TEST_RUN,
     FINISH_TEST_CASE,
     RootState,
     START_TEST_STEP_EXECUTION
 } from "../../redux/Reducers";
-import {cellStyle, getActionDescriptor} from "../TestCaseSteps";
-import {TestRun, TestRunStatus} from "../../interfaces/TestRun";
+import {getActionDescriptor} from "../../utils";
+import {TestRunStatus} from "../../interfaces/TestRun";
 import {TestCase} from "../../interfaces/TestCase";
+import {CustomTableCell} from "../CustomTableCell";
 
 type TestRunProps = {
     testCase: TestCase;
@@ -34,12 +35,12 @@ type TestRunProps = {
 export const TestRunComponent = ({testCase}: TestRunProps) => {
     const testRun = useSelector((state: RootState) => state.root.activeTestRun);
     const dispatch = useDispatch();
-    const [open, setOpen] = useState(!!testRun);
 
     const handleClose = () => {
-        setOpen(false);
+        dispatch({
+            type: CLOSE_TEST_RUN,
+        });
     };
-
 
     useEffect(() => {
         const handleMessage = (message: any) => {
@@ -60,11 +61,12 @@ export const TestRunComponent = ({testCase}: TestRunProps) => {
                 });
             }
             if (message.type === 'finish-test-case-execution') {
-                console.log('finish-test-case-execution:', message.status);
                 dispatch({
                     type: FINISH_TEST_CASE,
-                    testCaseId: (testRun as TestRun).id,
+                    testCaseId: testCase.id,
                     status: message.status,
+                    logs: message.logs,
+                    screenshot: message.screenshot,
                 });
             }
         }
@@ -75,10 +77,6 @@ export const TestRunComponent = ({testCase}: TestRunProps) => {
             chrome.runtime.onMessage.removeListener(handleMessage);
         }
     }, []);
-
-    useEffect(() => {
-        setOpen(!!testRun);
-    }, [testRun]);
 
     const getTestStepBackgroundColor = (step: any) => {
         if (step.status === TestRunStatus.PASSED) {
@@ -107,26 +105,33 @@ export const TestRunComponent = ({testCase}: TestRunProps) => {
     }
 
     const getTestRunStatusIcon = (step: any) => {
+        const style = {fill: getTestStepIconColor(step)};
         if (step.status === TestRunStatus.PASSED) {
-            return <CheckCircleOutlineRoundedIcon style={{fill: getTestStepIconColor(step)}}/>;
+            return <CheckCircleOutlineRoundedIcon style={style}/>;
         }
         if (step.status === TestRunStatus.FAILED) {
-            return <HighlightOffRoundedIcon/>;
+            return <HighlightOffRoundedIcon style={style}/>;
         }
         if (step.status === TestRunStatus.RUNNING) {
-            return <PendingOutlinedIcon/>;
+            return <PendingOutlinedIcon style={style}/>;
         }
         return;
+    }
+
+    const formatDuration = (durationInMillis: number): string => {
+        const totalSeconds = Math.floor(durationInMillis / 1000);
+        const milliseconds = durationInMillis % 1000;
+        return `${totalSeconds}:${milliseconds.toString().padStart(3, '0')}`;
     }
 
     return (
         <Dialog
             fullWidth={true}
             maxWidth={'xl'}
-            open={open}
+            open={!!testRun}
             onClose={handleClose}
         >
-            <DialogTitle>Run Test Case: {testCase.title}</DialogTitle>
+            <DialogTitle align='center'>Run Test Case: {testCase.title}</DialogTitle>
             <DialogContent>
                 <Box
                     sx={{
@@ -139,10 +144,10 @@ export const TestRunComponent = ({testCase}: TestRunProps) => {
                     <Table sx={{minWidth: 650}} aria-label="commands table">
                         <TableHead>
                             <TableRow>
-                                <TableCell style={cellStyle}>Action</TableCell>
-                                <TableCell style={cellStyle}>Element</TableCell>
-                                <TableCell style={cellStyle}>Value</TableCell>
-                                <TableCell style={cellStyle}>Status</TableCell>
+                                <CustomTableCell>Action</CustomTableCell>
+                                <CustomTableCell>Element</CustomTableCell>
+                                <CustomTableCell>Value</CustomTableCell>
+                                <CustomTableCell>Status</CustomTableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -154,29 +159,34 @@ export const TestRunComponent = ({testCase}: TestRunProps) => {
                                         backgroundColor: getTestStepBackgroundColor(step),
                                     }}
                                 >
-                                    <TableCell style={cellStyle}>{getActionDescriptor(step.name)?.label}</TableCell>
-                                    <TableCell style={cellStyle}>
+                                    <CustomTableCell>{getActionDescriptor(step.name)?.label}</CustomTableCell>
+                                    <CustomTableCell>
                                         {step.element}
-                                    </TableCell>
-                                    <TableCell style={cellStyle}>{step.value}</TableCell>
-                                    <TableCell style={cellStyle}>
+                                    </CustomTableCell>
+                                    <CustomTableCell>{step.value}</CustomTableCell>
+                                    <CustomTableCell>
                                         <div style={{
                                             display: 'flex',
                                             alignItems: 'center'
                                         }}>{getTestRunStatusIcon(step)}</div>
-                                    </TableCell>
+                                    </CustomTableCell>
                                 </TableRow>
                             )}
                         </TableBody>
                     </Table>
+                    {testRun?.duration &&
+                        <Typography variant="body1">Duration: {formatDuration(testRun.duration)}</Typography>}
                     <Typography variant="h6">Logs</Typography>
                     {testRun?.logs.map((log, index) =>
                         <Typography key={index}>{log}</Typography>
                     )}
+                    {testRun?.screenshot &&
+                        <Box sx={{maxWidth: '1000px', overflow: 'auto'}}><img src={testRun.screenshot}
+                                                                              alt="screenshot"/></Box>}
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose}>Close</Button>
+                <Button disabled={testRun?.status === TestRunStatus.RUNNING} onClick={handleClose}>Close</Button>
             </DialogActions>
         </Dialog>
     );

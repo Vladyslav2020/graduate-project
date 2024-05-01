@@ -27,12 +27,21 @@ class TestRunner {
                 logs: this.getLogs(executionResult, testStep)
             });
             if (executionResult.status === TestRunStatus.FAILED) {
+                const screenshot = await this.captureScreenshot();
                 chrome.runtime.sendMessage({
-                    type: 'finish-test-case-execution', status: TestRunStatus.FAILED});
+                    type: 'finish-test-case-execution',
+                    status: TestRunStatus.FAILED,
+                    logs: 'Test case failed',
+                    screenshot,
+                });
                 return;
             }
         }
-        chrome.runtime.sendMessage({type: 'finish-test-case-execution', status: TestRunStatus.PASSED});
+        chrome.runtime.sendMessage({
+            type: 'finish-test-case-execution',
+            status: TestRunStatus.PASSED,
+            logs: 'Test case passed',
+        });
     }
 
     private getLogs(executionResult: ExecutionResult, testStep: TestStep) {
@@ -42,6 +51,19 @@ class TestRunner {
 
     public addActionExecutor(actionExecutor: ActionExecutor) {
         this.actionExecutors[actionExecutor.name] = actionExecutor;
+    }
+
+    private async captureScreenshot() {
+        return new Promise((resolve) => {
+            chrome.runtime.sendMessage({type: 'captureScreenshot'});
+            const callback = (message, sender, sendResponse) => {
+                if (message.type === 'capturedScreenshot') {
+                    resolve(message.screenshot);
+                    chrome.runtime.onMessage.removeListener(callback);
+                }
+            };
+            chrome.runtime.onMessage.addListener(callback);
+        });
     }
 }
 

@@ -5,7 +5,10 @@
   "description": "A chrome extension for automating web application testing",
   "background": { "service_worker": "background.bundle.js" },
   "permissions": [
-    "contextMenus"
+    "contextMenus",
+    "tabs",
+    "activeTab",
+    "<all_urls>"
   ],
   "action": {
   },

@@ -12,6 +12,7 @@ export const RUN_TEST_CASE = 'RUN_TEST_CASE';
 export const ADD_TEST_STEP_EXECUTION_RESULT = 'ADD_TEST_STEP_EXECUTION_RESULT';
 export const START_TEST_STEP_EXECUTION = 'START_TEST_STEP_EXECUTION';
 export const FINISH_TEST_CASE = 'FINISH_TEST_CASE';
+export const CLOSE_TEST_RUN = 'CLOSE_TEST_RUN';
 
 export interface RootState {
     root: TestSuitesState;
@@ -63,6 +64,11 @@ const initialTestSuitesState: TestSuitesState = {
                     "name": "type",
                     "element": "/html[1]/body[1]/div[1]/div[2]/div[1]/input[1]",
                     "value": "insert"
+                },{
+                    "id": "6_1",
+                    "name": "verifyValue",
+                    "element": "/html[1]/body[1]/div[1]/div[2]/div[1]/input[1]",
+                    "value": "insert1"
                 },
                 {
                     "id": "7",
@@ -112,6 +118,10 @@ const testSuitesReducer = (state: TestSuitesState = initialTestSuitesState, acti
                         steps: action.steps
                     } : testCase)
                 } : testSuite),
+                activeTestCase: {
+                    ...state.activeTestCase,
+                    steps: action.steps,
+                }
             };
         case SET_ACTIVE_TEST_SUITE:
             return {
@@ -196,16 +206,30 @@ const testSuitesReducer = (state: TestSuitesState = initialTestSuitesState, acti
                 ...state,
                 testSuites: state.testSuites.map(testSuite => testSuite.id === state.activeTestSuite?.id ? {
                     ...testSuite,
-                    testCases: testSuite.testCases.map(testCase => testCase.id === state.activeTestCase?.id ? {
+                    testCases: testSuite.testCases.map(testCase => testCase.id === action.testCaseId ? {
                         ...testCase,
-                        runs: testCase.runs.map(run => run.id === action.testCaseId ? {
+                        runs: testCase.runs.map(run => run.id === state.activeTestRun?.id ? {
                             ...run,
-                            status: action.status
+                            status: action.status,
+                            duration: new Date().getTime() - run.start.getTime(),
+                            logs: [...run.logs, action.logs],
+                            screenshot: action.screenshot,
                         } : run),
                     } : testCase)
                 } : testSuite),
-                activeTestRun: null,
+                activeTestRun: {
+                    ...state.activeTestRun,
+                    status: action.status,
+                    duration: new Date().getTime() - (state.activeTestRun as TestRun).start.getTime(),
+                    logs: [...(state.activeTestRun as TestRun).logs, action.logs],
+                    screenshot: action.screenshot,
+                },
             };
+        case CLOSE_TEST_RUN:
+            return {
+                ...state,
+                activeTestRun: null,
+            }
         default:
             return state;
     }

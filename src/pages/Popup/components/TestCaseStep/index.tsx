@@ -3,10 +3,12 @@ import {TestStep} from "../../interfaces/TestStep";
 import {useSortable} from "@dnd-kit/sortable";
 import {CSS} from "@dnd-kit/utilities";
 import React from "react";
-import {FormControl, IconButton, InputLabel, MenuItem, Select, TableCell, TableRow, TextField} from "@mui/material";
+import {FormControl, IconButton, InputLabel, MenuItem, Select, TextField} from "@mui/material";
 import ClearOutlinedIcon from '@mui/icons-material/ClearOutlined';
 import LocationSearchingIcon from '@mui/icons-material/LocationSearching';
-import {actionsDescriptors, cellStyle, getActionDescriptor} from "../TestCaseSteps";
+import {actionsDescriptors, getActionDescriptor} from "../../utils";
+import {CustomTableRow} from "../CustomTableRow";
+import {CustomTableCell} from "../CustomTableCell";
 
 
 type TestStepProps = {
@@ -34,7 +36,7 @@ export const TestCaseStep = ({
 
     const style = {
         transition,
-        transform: CSS.Transform.toString(transform),
+        ...(transform ? {transform: CSS.Transform.toString({...transform, x: 0})} : {})
     };
 
     const handleRemove = () => {
@@ -58,24 +60,23 @@ export const TestCaseStep = ({
     }
 
     return (
-        <TableRow
+        <CustomTableRow
             sx={{"&:last-child td, &:last-child th": {border: 0}}}
             style={style}
             {...attributes}
             {...listeners}
             onDoubleClick={handleActivation}
         >
-            <TableCell
+            <CustomTableCell
                 component="th"
                 scope="row"
                 ref={setNodeRef}
-                style={cellStyle}
             >
                 <div style={{display: 'flex', alignItems: 'center'}}>
                     <DragIndicatorIcon/>
                 </div>
-            </TableCell>
-            <TableCell style={cellStyle}>{!activated ? getActionDescriptor(testStep.name)?.label :
+            </CustomTableCell>
+            <CustomTableCell>{!activated ? getActionDescriptor(testStep.name)?.label :
                 <FormControl fullWidth>
                     <InputLabel id="select-action-label">Action</InputLabel>
                     <Select
@@ -89,8 +90,8 @@ export const TestCaseStep = ({
                                                                               value={actionDescriptor.name}>{actionDescriptor.label}</MenuItem>)}
                     </Select>
                 </FormControl>
-            }</TableCell>
-            <TableCell style={cellStyle}>
+            }</CustomTableCell>
+            <CustomTableCell>
                 {!activated ? testStep.element : <div style={{display: 'flex', alignItems: 'center'}}>
                     <TextField value={testStep.element} style={{padding: '10px 5px'}}
                                onChange={handleElementChange}/>
@@ -98,11 +99,12 @@ export const TestCaseStep = ({
                         <IconButton onClick={handleLocatorEnable} color={locatorEnabled ? 'primary' : 'default'}
                                     size={'small'}><LocationSearchingIcon/></IconButton>}
                 </div>}
-            </TableCell>
-            <TableCell style={cellStyle}>{!activated ? testStep.value : <TextField value={testStep.value} style={{padding: '10px 5px'}}
-                                                                                   onChange={handleValueChange}/>}</TableCell>
-            <TableCell style={cellStyle} onClick={handleRemove}><IconButton size='small'
-                                                                            onClick={handleRemove}><ClearOutlinedIcon/></IconButton></TableCell>
-        </TableRow>
+            </CustomTableCell>
+            <CustomTableCell>{!activated ? testStep.value :
+                <TextField value={testStep.value} style={{padding: '10px 5px'}}
+                           onChange={handleValueChange}/>}</CustomTableCell>
+            <CustomTableCell onClick={handleRemove}><IconButton size='small'
+                                                                            onClick={handleRemove}><ClearOutlinedIcon/></IconButton></CustomTableCell>
+        </CustomTableRow>
     )
 }
