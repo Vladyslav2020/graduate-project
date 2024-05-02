@@ -9,9 +9,11 @@ import {RootState, RUN_TEST_CASE} from "./redux/Reducers";
 import {TestRun, TestRunStatus} from "./interfaces/TestRun";
 import {TestCase} from "./interfaces/TestCase";
 import {generateUniqueId} from "./utils";
+import {TestRuns} from "./components/TestRuns";
 
 export const Popup = () => {
     const activeTestCase = useSelector((state: RootState) => state.root.activeTestCase);
+    const [showTestRuns, setShowTestRuns] = useState(false);
     const dispatch = useDispatch();
     const [testCaseRunning, setTestCaseRunning] = useState(false);
 
@@ -38,8 +40,9 @@ export const Popup = () => {
             </header>
             {testCaseRunning && <TestRunComponent testCase={activeTestCase as TestCase}/>}
             <div style={{display: 'flex', justifyContent: 'center'}}>
-                <TestSuites/>
-                {activeTestCase && <TestCaseSteps/>}
+                <TestSuites setShowTestRuns={setShowTestRuns}/>
+                {activeTestCase && !showTestRuns && <TestCaseSteps/>}
+                {activeTestCase && showTestRuns && <TestRuns testCase={activeTestCase as TestCase}/>}
             </div>
         </div>
     );

@@ -3,6 +3,7 @@ import {TestSuite} from "../../interfaces/TestSuite";
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
+import ShowChartRoundedIcon from '@mui/icons-material/ShowChartRounded';
 import {
     Button,
     Dialog,
@@ -18,6 +19,7 @@ import {
 import {TestCase} from "../../interfaces/TestCase";
 import {ADD_TEST_SUITE, RootState, SET_ACTIVE_TEST_CASE, SET_TEST_SUITES} from "../../redux/Reducers";
 import {useDispatch, useSelector} from "react-redux";
+import {generateUniqueId} from "../../utils";
 
 type CommandType = {
     id: string;
@@ -25,7 +27,11 @@ type CommandType = {
     handler: any;
 }
 
-export const TestSuites = () => {
+type TestSuitesProps = {
+    setShowTestRuns: (arg: boolean) => void;
+}
+
+export const TestSuites = ({setShowTestRuns}: TestSuitesProps) => {
     const testSuites = useSelector((state: RootState) => state.root.testSuites);
     const dispatch = useDispatch();
     const [expandedTestSuites, setExpandedTestSuites] = useState<string[]>(testSuites.map(suite => suite.id));
@@ -48,6 +54,16 @@ export const TestSuites = () => {
         setActiveItem(testCase);
     };
 
+    const handleShowRuns = (event, testSuite, testCase) => {
+        event.stopPropagation();
+        setShowTestRuns(true);
+        dispatch({
+            type: SET_ACTIVE_TEST_CASE,
+            testSuite: testSuite,
+            testCase: testCase,
+        });
+    }
+
     const handleAddTestSuiteClick = () => {
         setInputValue('');
         setCommand({id: 'add-test-suite', dialogTitle: 'Add Test Suite', handler: handleAddTestSuite});
@@ -64,7 +80,7 @@ export const TestSuites = () => {
     const handleAddTestSuite = () => {
         dispatch({
             type: ADD_TEST_SUITE, testSuite: {
-                id: String(testSuites.length + 1),
+                id: generateUniqueId(),
                 title: inputValue,
                 testCases: []
             }
@@ -76,7 +92,7 @@ export const TestSuites = () => {
         const newTestSuites = testSuites.map(testSuite => {
             if (testSuite.id === activeItem?.id) {
                 const newTestCase: TestCase = {
-                    id: String(testSuite.testCases.length + 1),
+                    id: generateUniqueId(),
                     title: inputValue,
                     steps: [],
                     runs: [],
@@ -207,6 +223,7 @@ export const TestSuites = () => {
     }
 
     const setActiveTestCase = (testSuite, testCase) => {
+        setShowTestRuns(false);
         dispatch({
             type: SET_ACTIVE_TEST_CASE,
             testSuite: testSuite,
@@ -240,7 +257,12 @@ export const TestSuites = () => {
                 <div>
                     {testSuites.map((testSuite) => (
                         <div key={testSuite.id} style={{marginBottom: '10px'}}>
-                            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid black'}}>
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                borderBottom: '1px solid black'
+                            }}>
                                 <div style={{display: 'flex', alignItems: 'center'}}>
                                     <IconButton size='small' onClick={() => toggleTestSuite(testSuite.id)}>
                                         {expandedTestSuites.includes(testSuite.id) ? <KeyboardArrowDownRoundedIcon/> :
@@ -260,7 +282,9 @@ export const TestSuites = () => {
                             {expandedTestSuites.includes(testSuite.id) && (
                                 <div style={{marginLeft: '50px'}}>
                                     {testSuite.testCases.map((testCase) => (
-                                        <Button key={testCase.id} component='div' onClick={() => setActiveTestCase(testSuite, testCase)} color='inherit' variant='text' sx={{
+                                        <Button key={testCase.id} component='div'
+                                                onClick={() => setActiveTestCase(testSuite, testCase)} color='inherit'
+                                                variant='text' sx={{
                                             display: 'flex',
                                             paddingRight: '0',
                                             width: '100%',
@@ -270,6 +294,7 @@ export const TestSuites = () => {
                                             textTransform: 'none',
                                         }}>
                                             <Typography>{testCase.title}</Typography>
+                                            <IconButton onClick={(event) => handleShowRuns(event, testSuite, testCase)}><ShowChartRoundedIcon/></IconButton>
                                             <IconButton
                                                 onClick={(event) => handleMoreTestCaseOptionsClick(event, testCase)}><MoreVertRoundedIcon/></IconButton>
                                         </Button>

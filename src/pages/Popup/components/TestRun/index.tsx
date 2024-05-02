@@ -11,9 +11,6 @@ import {
     TableRow,
     Typography
 } from "@mui/material"
-import HighlightOffRoundedIcon from '@mui/icons-material/HighlightOffRounded';
-import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
-import PendingOutlinedIcon from '@mui/icons-material/PendingOutlined';
 import React, {useEffect} from "react"
 import {useDispatch, useSelector} from "react-redux";
 import {
@@ -23,10 +20,11 @@ import {
     RootState,
     START_TEST_STEP_EXECUTION
 } from "../../redux/Reducers";
-import {getActionDescriptor} from "../../utils";
+import {formatDuration, getActionDescriptor, getTestRunBackgroundColor} from "../../utils";
 import {TestRunStatus} from "../../interfaces/TestRun";
 import {TestCase} from "../../interfaces/TestCase";
 import {CustomTableCell} from "../CustomTableCell";
+import {TestRunStatusIcon} from "../TestRunStatusIcon";
 
 type TestRunProps = {
     testCase: TestCase;
@@ -78,52 +76,6 @@ export const TestRunComponent = ({testCase}: TestRunProps) => {
         }
     }, []);
 
-    const getTestStepBackgroundColor = (step: any) => {
-        if (step.status === TestRunStatus.PASSED) {
-            return '#E5FFDC';
-        }
-        if (step.status === TestRunStatus.FAILED) {
-            return '#FFE0E0';
-        }
-        if (step.status === TestRunStatus.RUNNING) {
-            return '#F1F9FF';
-        }
-        return 'none';
-    }
-
-    const getTestStepIconColor = (step: any) => {
-        if (step.status === TestRunStatus.PASSED) {
-            return '#107100';
-        }
-        if (step.status === TestRunStatus.FAILED) {
-            return '#FF7878';
-        }
-        if (step.status === TestRunStatus.RUNNING) {
-            return '#88B8FF';
-        }
-        return 'none';
-    }
-
-    const getTestRunStatusIcon = (step: any) => {
-        const style = {fill: getTestStepIconColor(step)};
-        if (step.status === TestRunStatus.PASSED) {
-            return <CheckCircleOutlineRoundedIcon style={style}/>;
-        }
-        if (step.status === TestRunStatus.FAILED) {
-            return <HighlightOffRoundedIcon style={style}/>;
-        }
-        if (step.status === TestRunStatus.RUNNING) {
-            return <PendingOutlinedIcon style={style}/>;
-        }
-        return;
-    }
-
-    const formatDuration = (durationInMillis: number): string => {
-        const totalSeconds = Math.floor(durationInMillis / 1000);
-        const milliseconds = durationInMillis % 1000;
-        return `${totalSeconds}:${milliseconds.toString().padStart(3, '0')}`;
-    }
-
     return (
         <Dialog
             fullWidth={true}
@@ -141,7 +93,7 @@ export const TestRunComponent = ({testCase}: TestRunProps) => {
                         width: 'fit-content',
                     }}
                 >
-                    <Table sx={{minWidth: 650}} aria-label="commands table">
+                    <Table sx={{minWidth: 650}} aria-label="test run steps">
                         <TableHead>
                             <TableRow>
                                 <CustomTableCell>Action</CustomTableCell>
@@ -156,7 +108,7 @@ export const TestRunComponent = ({testCase}: TestRunProps) => {
                                     key={step.id}
                                     sx={{
                                         "&:last-child td, &:last-child th": {border: 0},
-                                        backgroundColor: getTestStepBackgroundColor(step),
+                                        backgroundColor: getTestRunBackgroundColor(step),
                                     }}
                                 >
                                     <CustomTableCell>{getActionDescriptor(step.name)?.label}</CustomTableCell>
@@ -168,7 +120,7 @@ export const TestRunComponent = ({testCase}: TestRunProps) => {
                                         <div style={{
                                             display: 'flex',
                                             alignItems: 'center'
-                                        }}>{getTestRunStatusIcon(step)}</div>
+                                        }}><TestRunStatusIcon run={step}/></div>
                                     </CustomTableCell>
                                 </TableRow>
                             )}
