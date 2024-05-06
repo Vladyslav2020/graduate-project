@@ -17,7 +17,13 @@ import {
     Typography
 } from "@mui/material";
 import {TestCase} from "../../interfaces/TestCase";
-import {ADD_TEST_SUITE, RootState, SET_ACTIVE_TEST_CASE, SET_TEST_SUITES} from "../../redux/Reducers";
+import {
+    ADD_TEST_SUITE,
+    RootState,
+    SET_ACTIVE_TEST_CASE,
+    SET_TEST_SUITES,
+    SHOW_RUNS
+} from "../../redux/Reducers";
 import {useDispatch, useSelector} from "react-redux";
 import {generateUniqueId} from "../../utils";
 
@@ -27,13 +33,10 @@ type CommandType = {
     handler: any;
 }
 
-type TestSuitesProps = {
-    setShowTestRuns: (arg: boolean) => void;
-}
-
-export const TestSuites = ({setShowTestRuns}: TestSuitesProps) => {
+export const TestSuites = () => {
     const testSuites = useSelector((state: RootState) => state.root.testSuites);
     const dispatch = useDispatch();
+    const activeTestCase = useSelector((state: RootState) => state.root.activeTestCase);
     const [expandedTestSuites, setExpandedTestSuites] = useState<string[]>(testSuites.map(suite => suite.id));
     const [dialogOpen, setDialogOpen] = useState(false);
     const [inputValue, setInputValue] = useState('');
@@ -50,18 +53,19 @@ export const TestSuites = ({setShowTestRuns}: TestSuitesProps) => {
     }
 
     const handleMoreTestCaseOptionsClick = (event, testCase) => {
+        event.stopPropagation();
         setAnchorEl(event.currentTarget);
         setActiveItem(testCase);
     };
 
     const handleShowRuns = (event, testSuite, testCase) => {
         event.stopPropagation();
-        setShowTestRuns(true);
         dispatch({
             type: SET_ACTIVE_TEST_CASE,
             testSuite: testSuite,
             testCase: testCase,
         });
+        dispatch({type: SHOW_RUNS});
     }
 
     const handleAddTestSuiteClick = () => {
@@ -223,7 +227,6 @@ export const TestSuites = ({setShowTestRuns}: TestSuitesProps) => {
     }
 
     const setActiveTestCase = (testSuite, testCase) => {
-        setShowTestRuns(false);
         dispatch({
             type: SET_ACTIVE_TEST_CASE,
             testSuite: testSuite,
@@ -271,7 +274,7 @@ export const TestSuites = ({setShowTestRuns}: TestSuitesProps) => {
                                     <Typography> {testSuite.title}</Typography>
                                 </div>
                                 <div>
-                                    <Button size='small' variant="outlined"
+                                    <Button size='small' variant="text"
                                             onClick={() => handleAddTestCaseClick(testSuite)}>+ Test Case</Button>
                                     <IconButton style={{marginLeft: '10px'}}
                                                 onClick={(event) => handleMoreTestSuiteOptionsClick(event, testSuite)}>
@@ -283,7 +286,7 @@ export const TestSuites = ({setShowTestRuns}: TestSuitesProps) => {
                                 <div style={{marginLeft: '50px'}}>
                                     {testSuite.testCases.map((testCase) => (
                                         <Button key={testCase.id} component='div'
-                                                onClick={() => setActiveTestCase(testSuite, testCase)} color='inherit'
+                                                onClick={() => setActiveTestCase(testSuite, testCase)} color={'inherit'}
                                                 variant='text' sx={{
                                             display: 'flex',
                                             paddingRight: '0',
@@ -292,11 +295,15 @@ export const TestSuites = ({setShowTestRuns}: TestSuitesProps) => {
                                             alignItems: 'center',
                                             marginBottom: '10px',
                                             textTransform: 'none',
+                                            backgroundColor: activeTestCase?.id === testCase.id ? '#eaeaea' : 'inherit',
                                         }}>
                                             <Typography>{testCase.title}</Typography>
-                                            <IconButton onClick={(event) => handleShowRuns(event, testSuite, testCase)}><ShowChartRoundedIcon/></IconButton>
-                                            <IconButton
-                                                onClick={(event) => handleMoreTestCaseOptionsClick(event, testCase)}><MoreVertRoundedIcon/></IconButton>
+                                            <div>
+                                                <IconButton
+                                                    onClick={(event) => handleShowRuns(event, testSuite, testCase)}><ShowChartRoundedIcon/></IconButton>
+                                                <IconButton
+                                                    onClick={(event) => handleMoreTestCaseOptionsClick(event, testCase)}><MoreVertRoundedIcon/></IconButton>
+                                            </div>
                                         </Button>
                                     ))}
                                     <Menu

@@ -16,12 +16,18 @@ import {
     XAxis,
     YAxis
 } from "recharts";
+import {CustomTableRow} from "../CustomTableRow";
+import {TestRun} from "../../interfaces/TestRun";
+import {useDispatch} from "react-redux";
+import {SET_TEST_RUN} from "../../redux/Reducers";
 
 type TestRunProps = {
     testCase: TestCase;
 }
 
 export const TestRuns = ({testCase}: TestRunProps) => {
+    const dispatch = useDispatch();
+
     const runStatus = testCase.runs.reduce((acc, run) => {
         const group = acc[run.status] || 0;
         acc[run.status] = group + 1;
@@ -32,6 +38,10 @@ export const TestRuns = ({testCase}: TestRunProps) => {
 
     const runDurationData = testCase.runs.filter(run => run.duration)
         .map(run => ({start: run.start.toLocaleString(), duration: run.duration}));
+
+    const openTestRun = (testRun: TestRun) => {
+        dispatch({type: SET_TEST_RUN, testRun});
+    }
 
     return (
         <Box>
@@ -46,12 +56,13 @@ export const TestRuns = ({testCase}: TestRunProps) => {
                 </TableHead>
                 <TableBody>
                     {testCase.runs.map((run, index) =>
-                        <TableRow
+                        <CustomTableRow
                             key={run.id}
                             sx={{
                                 "&:last-child td, &:last-child th": {border: 0},
                                 backgroundColor: getTestRunBackgroundColor(run),
                             }}
+                            onClick={() => openTestRun(run)}
                         >
                             <CustomTableCell>{index + 1}</CustomTableCell>
                             <CustomTableCell>{run.start.toLocaleString()}</CustomTableCell>
@@ -62,7 +73,7 @@ export const TestRuns = ({testCase}: TestRunProps) => {
                                     alignItems: 'center'
                                 }}><TestRunStatusIcon run={run}/></div>
                             </CustomTableCell>
-                        </TableRow>
+                        </CustomTableRow>
                     )}
                 </TableBody>
             </Table>

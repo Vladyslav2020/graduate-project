@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React from 'react'
 import {Logo} from "./components/Logo";
 import {Actions} from "./components/Actions";
 import {TestSuites} from "./components/TestSuites";
@@ -13,12 +13,13 @@ import {TestRuns} from "./components/TestRuns";
 
 export const Popup = () => {
     const activeTestCase = useSelector((state: RootState) => state.root.activeTestCase);
-    const [showTestRuns, setShowTestRuns] = useState(false);
+    const pagesHistory = useSelector((state: RootState) => state.root.pagesHistory);
+    const lastPage = pagesHistory[pagesHistory.length - 1];
     const dispatch = useDispatch();
-    const [testCaseRunning, setTestCaseRunning] = useState(false);
+
+    console.log('last page', lastPage);
 
     const runTestCase = () => {
-        setTestCaseRunning(true);
         const newTestRun: TestRun = {
             id: generateUniqueId(),
             status: TestRunStatus.RUNNING,
@@ -38,11 +39,11 @@ export const Popup = () => {
                     <Actions runTestCase={runTestCase}/>
                 </div>
             </header>
-            {testCaseRunning && <TestRunComponent testCase={activeTestCase as TestCase}/>}
             <div style={{display: 'flex', justifyContent: 'center'}}>
-                <TestSuites setShowTestRuns={setShowTestRuns}/>
-                {activeTestCase && !showTestRuns && <TestCaseSteps/>}
-                {activeTestCase && showTestRuns && <TestRuns testCase={activeTestCase as TestCase}/>}
+                <TestSuites/>
+                {lastPage === 'testCases' && <TestCaseSteps/>}
+                {lastPage === 'runs' && <TestRuns testCase={activeTestCase as TestCase}/>}
+                {lastPage === 'run' && <TestRunComponent testCase={activeTestCase as TestCase}/>}
             </div>
         </div>
     );

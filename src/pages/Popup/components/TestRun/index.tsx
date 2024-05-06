@@ -1,27 +1,13 @@
-import {
-    Box,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Table,
-    TableBody,
-    TableHead,
-    TableRow,
-    Typography
-} from "@mui/material"
+import {Box, Table, TableBody, TableHead, TableRow, Typography} from "@mui/material"
 import React, {useEffect} from "react"
 import {useDispatch, useSelector} from "react-redux";
 import {
     ADD_TEST_STEP_EXECUTION_RESULT,
-    CLOSE_TEST_RUN,
     FINISH_TEST_CASE,
     RootState,
     START_TEST_STEP_EXECUTION
 } from "../../redux/Reducers";
 import {formatDuration, getActionDescriptor, getTestRunBackgroundColor} from "../../utils";
-import {TestRunStatus} from "../../interfaces/TestRun";
 import {TestCase} from "../../interfaces/TestCase";
 import {CustomTableCell} from "../CustomTableCell";
 import {TestRunStatusIcon} from "../TestRunStatusIcon";
@@ -33,12 +19,6 @@ type TestRunProps = {
 export const TestRunComponent = ({testCase}: TestRunProps) => {
     const testRun = useSelector((state: RootState) => state.root.activeTestRun);
     const dispatch = useDispatch();
-
-    const handleClose = () => {
-        dispatch({
-            type: CLOSE_TEST_RUN,
-        });
-    };
 
     useEffect(() => {
         const handleMessage = (message: any) => {
@@ -77,15 +57,8 @@ export const TestRunComponent = ({testCase}: TestRunProps) => {
     }, []);
 
     return (
-        <Dialog
-            fullWidth={true}
-            maxWidth={'xl'}
-            open={!!testRun}
-            onClose={handleClose}
-        >
-            <DialogTitle align='center'>Run Test Case: {testCase.title}</DialogTitle>
-            <DialogContent>
-                <Box
+        <>
+            <Box
                     sx={{
                         display: 'flex',
                         flexDirection: 'column',
@@ -93,7 +66,8 @@ export const TestRunComponent = ({testCase}: TestRunProps) => {
                         width: 'fit-content',
                     }}
                 >
-                    <Table sx={{minWidth: 650}} aria-label="test run steps">
+                <Typography variant='h6' align='center'>Run of Test Case: {testCase.title}</Typography>
+                <Table sx={{minWidth: 650}} aria-label="test run steps">
                         <TableHead>
                             <TableRow>
                                 <CustomTableCell>Action</CustomTableCell>
@@ -136,10 +110,6 @@ export const TestRunComponent = ({testCase}: TestRunProps) => {
                         <Box sx={{maxWidth: '1000px', overflow: 'auto'}}><img src={testRun.screenshot}
                                                                               alt="screenshot"/></Box>}
                 </Box>
-            </DialogContent>
-            <DialogActions>
-                <Button disabled={testRun?.status === TestRunStatus.RUNNING} onClick={handleClose}>Close</Button>
-            </DialogActions>
-        </Dialog>
+        </>
     );
 }

@@ -9,10 +9,13 @@ export const SET_TEST_STEPS = 'SET_TEST_STEPS';
 export const SET_ACTIVE_TEST_SUITE = 'SET_ACTIVE_TEST_SUITE';
 export const SET_ACTIVE_TEST_CASE = 'SET_ACTIVE_TEST_CASE';
 export const RUN_TEST_CASE = 'RUN_TEST_CASE';
+export const SET_TEST_RUN = 'SET_TEST_RUN';
 export const ADD_TEST_STEP_EXECUTION_RESULT = 'ADD_TEST_STEP_EXECUTION_RESULT';
 export const START_TEST_STEP_EXECUTION = 'START_TEST_STEP_EXECUTION';
 export const FINISH_TEST_CASE = 'FINISH_TEST_CASE';
 export const CLOSE_TEST_RUN = 'CLOSE_TEST_RUN';
+export const GO_TO_BACK_PAGE = 'GO_TO_BACK_PAGE';
+export const SHOW_RUNS = 'SHOW_RUNS';
 
 export interface RootState {
     root: TestSuitesState;
@@ -23,7 +26,10 @@ export interface TestSuitesState {
     activeTestSuite: TestSuite | null;
     activeTestCase: TestCase | null;
     activeTestRun: TestRun | null;
+    pagesHistory: Page[];
 }
+
+type Page = 'testSuites' | 'testCases' | 'runs' | 'run';
 
 const initialTestSuitesState: TestSuitesState = {
     testSuites: [{
@@ -64,7 +70,7 @@ const initialTestSuitesState: TestSuitesState = {
                     "name": "type",
                     "element": "/html[1]/body[1]/div[1]/div[2]/div[1]/input[1]",
                     "value": "insert"
-                },{
+                }, {
                     "id": "6_1",
                     "name": "verifyValue",
                     "element": "/html[1]/body[1]/div[1]/div[2]/div[1]/input[1]",
@@ -94,6 +100,7 @@ const initialTestSuitesState: TestSuitesState = {
     activeTestSuite: null,
     activeTestCase: null,
     activeTestRun: null,
+    pagesHistory: ['testSuites'],
 };
 
 const testSuitesReducer = (state: TestSuitesState = initialTestSuitesState, action: any) => {
@@ -133,6 +140,7 @@ const testSuitesReducer = (state: TestSuitesState = initialTestSuitesState, acti
                 ...state,
                 activeTestSuite: action.testSuite,
                 activeTestCase: action.testCase,
+                pagesHistory: ['testSuites', 'testCases'],
             };
         case RUN_TEST_CASE:
             return {
@@ -150,6 +158,13 @@ const testSuitesReducer = (state: TestSuitesState = initialTestSuitesState, acti
                     })
                 } : testSuite),
                 activeTestRun: action.testRun,
+                pagesHistory: [...state.pagesHistory, 'run'],
+            };
+        case SET_TEST_RUN:
+            return {
+                ...state,
+                activeTestRun: action.testRun,
+                pagesHistory: [...state.pagesHistory, 'run'],
             };
         case ADD_TEST_STEP_EXECUTION_RESULT:
             return {
@@ -229,7 +244,18 @@ const testSuitesReducer = (state: TestSuitesState = initialTestSuitesState, acti
             return {
                 ...state,
                 activeTestRun: null,
-            }
+                pagesHistory: state.pagesHistory.slice(0, -1),
+            };
+        case GO_TO_BACK_PAGE:
+            return {
+                ...state,
+                pagesHistory: state.pagesHistory.slice(0, -1),
+            };
+        case SHOW_RUNS:
+            return {
+                ...state,
+                pagesHistory: [...state.pagesHistory, 'runs'],
+            };
         default:
             return state;
     }

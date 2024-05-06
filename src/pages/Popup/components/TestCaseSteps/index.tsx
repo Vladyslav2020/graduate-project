@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import {closestCorners, DndContext, PointerSensor, useSensor, useSensors} from "@dnd-kit/core";
 import {arrayMove, SortableContext, verticalListSortingStrategy} from "@dnd-kit/sortable";
 import {TestCaseStep} from "../TestCaseStep";
-import {Button, Table, TableBody, TableHead, TableRow} from "@mui/material";
+import {Button, Table, TableBody, TableHead, TableRow, Typography} from "@mui/material";
 import {TestStep} from "../../interfaces/TestStep";
 import {RootState, SET_TEST_STEPS} from "../../redux/Reducers";
 import {useDispatch, useSelector} from "react-redux";
@@ -125,6 +125,7 @@ export const TestCaseSteps = () => {
 
     return (
         <div>
+            <Typography variant='h6' align='center'>Test Case: {testCase?.title}</Typography>
             <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
                 <Table sx={{minWidth: 650}} aria-label="commands table">
                     <TableHead>
@@ -149,7 +150,7 @@ export const TestCaseSteps = () => {
                     </TableBody>
                 </Table>
             </DndContext>
-            <Button size='small' variant='outlined' sx={{marginTop: '5px'}} onClick={addTestStep}>+ Test Step</Button>
+            <Button size='small' variant='text' sx={{marginTop: '5px'}} onClick={addTestStep}>+ Test Step</Button>
         </div>
     );
 }
