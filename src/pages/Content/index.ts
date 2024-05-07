@@ -1,6 +1,7 @@
 import {
     clickActionHandler,
     contextMenuActionHandler,
+    doubleClickActionHandler,
     pressKeyActionHandler,
     typeActionHandler
 } from "./modules/record/ActionHandler";
@@ -16,10 +17,11 @@ recorder.addActionHandler(typeActionHandler);
 recorder.addActionHandler(clickActionHandler);
 recorder.addActionHandler(pressKeyActionHandler);
 recorder.addActionHandler(contextMenuActionHandler);
+recorder.addActionHandler(doubleClickActionHandler);
 
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-    console.log('Message', message);
+    console.log('Message', message, 'sender', sender);
     if (message.command === 'subscribe-recorder') {
         recorder.subscribe();
     } else if (message.command === 'unsubscribe-recorder') {

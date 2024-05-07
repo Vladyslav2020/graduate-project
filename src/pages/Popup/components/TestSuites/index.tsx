@@ -1,9 +1,11 @@
-import React, {useState} from "react";
+import React, {useRef, useState} from "react";
 import {TestSuite} from "../../interfaces/TestSuite";
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import ShowChartRoundedIcon from '@mui/icons-material/ShowChartRounded';
+import PublishRoundedIcon from '@mui/icons-material/PublishRounded';
+import GetAppRoundedIcon from '@mui/icons-material/GetAppRounded';
 import {
     Button,
     Dialog,
@@ -17,13 +19,7 @@ import {
     Typography
 } from "@mui/material";
 import {TestCase} from "../../interfaces/TestCase";
-import {
-    ADD_TEST_SUITE,
-    RootState,
-    SET_ACTIVE_TEST_CASE,
-    SET_TEST_SUITES,
-    SHOW_RUNS
-} from "../../redux/Reducers";
+import {ADD_TEST_SUITE, RootState, SET_ACTIVE_TEST_CASE, SET_TEST_SUITES, SHOW_RUNS} from "../../redux/Reducers";
 import {useDispatch, useSelector} from "react-redux";
 import {generateUniqueId} from "../../utils";
 
@@ -46,6 +42,7 @@ export const TestSuites = () => {
     const [anchorEl, setAnchorEl] = useState(null);
 
     const [command, setCommand] = useState<CommandType | null>(null);
+    const fileInputRef = useRef(null);
 
     const handleMoreTestSuiteOptionsClick = (event, testSuite) => {
         setAnchorEl(event.currentTarget);
@@ -93,14 +90,16 @@ export const TestSuites = () => {
     }
 
     const handleAddTestCase = () => {
+        let activeTestSuite;
+        const newTestCase: TestCase = {
+            id: generateUniqueId(),
+            title: inputValue,
+            steps: [],
+            runs: [],
+        };
         const newTestSuites = testSuites.map(testSuite => {
             if (testSuite.id === activeItem?.id) {
-                const newTestCase: TestCase = {
-                    id: generateUniqueId(),
-                    title: inputValue,
-                    steps: [],
-                    runs: [],
-                };
+                activeTestSuite = testSuite;
                 return {
                     ...testSuite,
                     testCases: [...testSuite.testCases, newTestCase]
@@ -111,6 +110,11 @@ export const TestSuites = () => {
         dispatch({
             type: SET_TEST_SUITES,
             testSuites: newTestSuites,
+        });
+        dispatch({
+            type: SET_ACTIVE_TEST_CASE,
+            testSuite: activeTestSuite,
+            testCase: newTestCase,
         });
         setDialogOpen(false);
     }
@@ -234,8 +238,69 @@ export const TestSuites = () => {
         });
     }
 
+    const exportTestSuite = (testSuite: TestSuite) => {
+        const jsonData = JSON.stringify({
+            ...testSuite,
+            testCases: testSuite.testCases.map(testCase => ({
+                id: testCase.id,
+                title: testCase.title,
+                steps: testCase.steps
+            }))
+        });
+
+        const blob = new Blob([jsonData], {type: 'application/json'});
+
+        chrome.downloads.download({
+            url: URL.createObjectURL(blob),
+            filename: 'test-suite.json',
+            saveAs: true
+        }, (downloadId) => {
+            if (chrome.runtime.lastError) {
+                console.error('Error exporting test suite:', chrome.runtime.lastError.message);
+            } else {
+                console.log('Test suite exported to test-suite.json');
+            }
+        });
+    }
+
+    const importTestSuite = () => {
+        if (!fileInputRef.current) {
+            return;
+        }
+        (fileInputRef.current as HTMLInputElement).click();
+    }
+
+    const handleImportFile = (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+            if (!e.target.result) {
+                return;
+            }
+            const jsonData = JSON.parse(e.target.result as string);
+            if (!jsonData) {
+                return;
+            }
+            const newTestSuite: TestSuite = {
+                id: generateUniqueId(),
+                title: jsonData.title,
+                testCases: jsonData.testCases.map(testCase => ({
+                    id: generateUniqueId(),
+                    title: testCase.title,
+                    steps: testCase.steps,
+                    runs: []
+                }))
+            };
+            dispatch({
+                type: SET_TEST_SUITES,
+                testSuites: [...testSuites, newTestSuite],
+            });
+        };
+        reader.readAsText(file);
+    }
+
     return (
-        <div style={{padding: '20px', minWidth: '300px'}}>
+        <div style={{padding: '0 20px', minWidth: '300px'}}>
             <div>
                 <div style={{
                     display: 'flex',
@@ -244,7 +309,19 @@ export const TestSuites = () => {
                     marginBottom: '20px'
                 }}>
                     <Typography>Test Suites</Typography>
-                    <Button variant="outlined" size='small' onClick={handleAddTestSuiteClick}>+ Test Suite</Button>
+                    <div>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="application/json"
+                            hidden
+                            onChange={handleImportFile}
+                        />
+                        <IconButton color='primary' onClick={importTestSuite}>
+                            <GetAppRoundedIcon/>
+                        </IconButton>
+                        <Button variant="outlined" size='small' onClick={handleAddTestSuiteClick}>+ Test Suite</Button>
+                    </div>
                 </div>
                 <Dialog open={dialogOpen} onClose={handleCloseDialog}>
                     <DialogTitle>{command?.dialogTitle}</DialogTitle>
@@ -274,10 +351,11 @@ export const TestSuites = () => {
                                     <Typography> {testSuite.title}</Typography>
                                 </div>
                                 <div>
+                                    <IconButton sx={{marginLeft: '20px'}} onClick={() => exportTestSuite(testSuite)}
+                                                color='primary'><PublishRoundedIcon/></IconButton>
                                     <Button size='small' variant="text"
                                             onClick={() => handleAddTestCaseClick(testSuite)}>+ Test Case</Button>
-                                    <IconButton style={{marginLeft: '10px'}}
-                                                onClick={(event) => handleMoreTestSuiteOptionsClick(event, testSuite)}>
+                                    <IconButton onClick={(event) => handleMoreTestSuiteOptionsClick(event, testSuite)}>
                                         <MoreVertRoundedIcon/>
                                     </IconButton>
                                 </div>
@@ -289,11 +367,10 @@ export const TestSuites = () => {
                                                 onClick={() => setActiveTestCase(testSuite, testCase)} color={'inherit'}
                                                 variant='text' sx={{
                                             display: 'flex',
-                                            paddingRight: '0',
+                                            padding: '0 0 0 10px',
                                             width: '100%',
                                             justifyContent: 'space-between',
                                             alignItems: 'center',
-                                            marginBottom: '10px',
                                             textTransform: 'none',
                                             backgroundColor: activeTestCase?.id === testCase.id ? '#eaeaea' : 'inherit',
                                         }}>

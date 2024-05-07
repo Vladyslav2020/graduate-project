@@ -1,7 +1,7 @@
 import {TestCase} from "../../../Popup/interfaces/TestCase";
 import {
     ActionExecutor,
-    clickActionExecutor,
+    clickActionExecutor, doubleClickActionExecutor,
     ExecutionResult,
     openActionExecutor,
     pressKeyActionExecutor,
@@ -17,31 +17,39 @@ class TestRunner {
     private actionExecutors: { [key: string]: ActionExecutor } = {};
 
     public async runTestCase(testCase: TestCase) {
-        for (const testStep of testCase.steps) {
-            chrome.runtime.sendMessage({type: 'start-test-step-execution', stepId: testStep.id});
-            const executionResult = await this.actionExecutors[testStep.name].execute(testStep);
-            chrome.runtime.sendMessage({
-                type: 'finish-test-step-execution',
-                stepId: testStep.id,
-                status: executionResult.status,
-                logs: this.getLogs(executionResult, testStep)
-            });
-            if (executionResult.status === TestRunStatus.FAILED) {
-                const screenshot = await this.captureScreenshot();
+        try {
+            for (const testStep of testCase.steps) {
+                chrome.runtime.sendMessage({type: 'start-test-step-execution', stepId: testStep.id});
+                const executionResult = await this.actionExecutors[testStep.name].execute(testStep);
                 chrome.runtime.sendMessage({
-                    type: 'finish-test-case-execution',
-                    status: TestRunStatus.FAILED,
-                    logs: 'Test case failed',
-                    screenshot,
+                    type: 'finish-test-step-execution',
+                    stepId: testStep.id,
+                    status: executionResult.status,
+                    logs: this.getLogs(executionResult, testStep)
                 });
-                return;
+                if (executionResult.status === TestRunStatus.FAILED) {
+                    const screenshot = await this.captureScreenshot();
+                    chrome.runtime.sendMessage({
+                        type: 'finish-test-case-execution',
+                        status: TestRunStatus.FAILED,
+                        logs: 'Test case failed',
+                        screenshot,
+                    });
+                    return;
+                }
             }
+            chrome.runtime.sendMessage({
+                type: 'finish-test-case-execution',
+                status: TestRunStatus.PASSED,
+                logs: 'Test case passed',
+            });
+        } catch (e: any) {
+            chrome.runtime.sendMessage({
+                type: 'finish-test-case-execution',
+                status: TestRunStatus.FAILED,
+                logs: 'Test case failed' + e.message ? `: ${e.message}` : '',
+            });
         }
-        chrome.runtime.sendMessage({
-            type: 'finish-test-case-execution',
-            status: TestRunStatus.PASSED,
-            logs: 'Test case passed',
-        });
     }
 
     private getLogs(executionResult: ExecutionResult, testStep: TestStep) {
@@ -63,6 +71,9 @@ class TestRunner {
                 }
             };
             chrome.runtime.onMessage.addListener(callback);
+            setTimeout(() => {
+                resolve(null)
+            }, 1000);
         });
     }
 }
@@ -70,6 +81,7 @@ class TestRunner {
 export const testRunner = new TestRunner();
 testRunner.addActionExecutor(openActionExecutor);
 testRunner.addActionExecutor(clickActionExecutor);
+testRunner.addActionExecutor(doubleClickActionExecutor);
 testRunner.addActionExecutor(typeActionExecutor);
 testRunner.addActionExecutor(pressKeyActionExecutor);
 testRunner.addActionExecutor(verifyValueActionExecutor);

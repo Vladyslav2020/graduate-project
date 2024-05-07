@@ -3,6 +3,7 @@ import {TestRunStatus} from "./interfaces/TestRun";
 export const actionsDescriptors = [
     {name: 'open', label: 'Open', elementType: 'text'},
     {name: 'click', label: 'Click', elementType: 'html'},
+    {name: 'doubleClick', label: 'Double Click', elementType: 'html'},
     {name: 'pressKey', label: 'Press Key', elementType: 'html'},
     {name: 'type', label: 'Type', elementType: 'html'},
     {name: 'verifyValue', label: 'Verify Value', elementType: 'html'},

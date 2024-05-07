@@ -43,8 +43,10 @@ var options = {
     background: path.join(baseDirname, 'src', 'pages', 'Background', 'index.ts'),
     contentScript: path.join(baseDirname, 'src', 'pages', 'Content', 'index.ts'),
   },
-  chromeExtensionBoilerplate: {
-    notHotReload: ['background', 'contentScript'],
+  custom: {
+    notHMR: ['background', 'contentScript', 'devtools'],
+    enableBackgroundAutoReload: true,
+    enableContentScriptsAutoReload: true,
   },
   output: {
     filename: '[name].bundle.js',

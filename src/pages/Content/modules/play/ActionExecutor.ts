@@ -62,6 +62,30 @@ class ClickActionExecutor implements ActionExecutor {
     }
 }
 
+class DoubleClickActionExecutor implements ActionExecutor {
+    name = 'doubleClick';
+
+    async execute(testStep: TestStep): Promise<ExecutionResult> {
+        try {
+            const element = await waitForElementByXPath(testStep.element);
+            this.doubleClickElement(element);
+            return {status: TestRunStatus.PASSED, message: 'Executed action: Double click element'};
+        } catch (e) {
+            return {status: TestRunStatus.FAILED, message: 'Element not found'};
+        }
+    }
+
+    private doubleClickElement(element): void {
+        const clickEvent = new MouseEvent('dblclick', {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+        });
+
+        element.dispatchEvent(clickEvent);
+    }
+}
+
 class TypeActionExecutor implements ActionExecutor {
     name = 'type';
 
@@ -184,6 +208,7 @@ class VerifyTitleActionExecutor implements ActionExecutor {
 
 export const openActionExecutor = new OpenActionExecutor();
 export const clickActionExecutor = new ClickActionExecutor();
+export const doubleClickActionExecutor = new DoubleClickActionExecutor();
 export const typeActionExecutor = new TypeActionExecutor();
 export const pressKeyActionExecutor = new PressKeyActionExecutor();
 export const verifyValueActionExecutor = new VerifyValueActionExecutor();

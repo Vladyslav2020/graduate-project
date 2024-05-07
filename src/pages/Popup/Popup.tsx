@@ -17,8 +17,6 @@ export const Popup = () => {
     const lastPage = pagesHistory[pagesHistory.length - 1];
     const dispatch = useDispatch();
 
-    console.log('last page', lastPage);
-
     const runTestCase = () => {
         const newTestRun: TestRun = {
             id: generateUniqueId(),
@@ -39,11 +37,13 @@ export const Popup = () => {
                     <Actions runTestCase={runTestCase}/>
                 </div>
             </header>
-            <div style={{display: 'flex', justifyContent: 'center'}}>
+            <div style={{display: 'flex', justifyContent: lastPage === 'testSuites' ? 'center' : 'space-between'}}>
                 <TestSuites/>
-                {lastPage === 'testCases' && <TestCaseSteps/>}
-                {lastPage === 'runs' && <TestRuns testCase={activeTestCase as TestCase}/>}
-                {lastPage === 'run' && <TestRunComponent testCase={activeTestCase as TestCase}/>}
+                {lastPage !== 'testSuites' && <div style={{flexGrow: '1'}}>
+                    {lastPage === 'testCases' && <TestCaseSteps/>}
+                    {lastPage === 'runs' && <TestRuns testCase={activeTestCase as TestCase}/>}
+                    {lastPage === 'run' && <TestRunComponent testCase={activeTestCase as TestCase}/>}
+                </div>}
             </div>
         </div>
     );

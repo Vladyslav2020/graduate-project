@@ -1,13 +1,52 @@
 export function getXPath(element) {
-    const idx = (sib, name?) => sib
-        ? idx(sib.previousElementSibling, name || sib.localName) + (sib.localName == name)
-        : 1;
-    const segs = elm => !elm || elm.nodeType !== 1
-        ? ['']
-        : elm.id && document.querySelector(`#${elm.id}`) === elm
-            ? [`id("${elm.id}")`]
-            : [...segs(elm.parentNode), `${elm.localName.toLowerCase()}[${idx(elm)}]`];
-    return segs(element).join('/');
+    let selector = '';
+    let foundRoot;
+    let currentElement = element;
+
+    do {
+        const tagName = currentElement.tagName.toLowerCase();
+        const parentElement = currentElement.parentElement;
+
+        if ((parentElement?.childElementCount || 0) > 1) {
+            const parentsChildren = [...parentElement.children];
+            let tag: any[] = [];
+            parentsChildren.forEach(child => {
+                if (child.tagName.toLowerCase() === tagName) {
+                    tag.push(child); // Append to tag
+                }
+            })
+
+            if (tag.length === 1) {
+                selector = `/${tagName}${selector}`;
+            } else {
+                const position = tag.indexOf(currentElement) + 1;
+                selector = `/${tagName}[${position}]${selector}`;
+            }
+        } else {
+            selector = `/${tagName}${selector}`;
+        }
+
+        currentElement = parentElement;
+        foundRoot = parentElement.tagName.toLowerCase() === 'html';
+        if (foundRoot) selector = `/html${selector}`;
+    }
+    while (foundRoot === false);
+
+    return selector;
+}
+
+export function isElementValid(element) {
+    if (!element) {
+        return false;
+    }
+    let currentElement = element;
+    while (currentElement) {
+        if (currentElement.tagName.toLowerCase() === 'body') {
+            return true;
+        }
+        currentElement = currentElement.parentElement;
+    }
+    return false;
 }
 
 export function waitForElementByXPath(xpath: string, timeout = 1000): Promise<Element> {

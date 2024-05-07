@@ -3,12 +3,14 @@ import {TestStep} from "../../interfaces/TestStep";
 import {useSortable} from "@dnd-kit/sortable";
 import {CSS} from "@dnd-kit/utilities";
 import React from "react";
-import {FormControl, IconButton, InputLabel, MenuItem, Select, TextField} from "@mui/material";
+import {FormControl, IconButton, InputLabel, MenuItem} from "@mui/material";
 import ClearOutlinedIcon from '@mui/icons-material/ClearOutlined';
 import LocationSearchingIcon from '@mui/icons-material/LocationSearching';
 import {actionsDescriptors, getActionDescriptor} from "../../utils";
 import {CustomTableRow} from "../CustomTableRow";
 import {CustomTableCell} from "../CustomTableCell";
+import {CustomTextField} from "../CustomTextField";
+import {CustomSelect} from "../CustomSelect";
 
 
 type TestStepProps = {
@@ -79,7 +81,7 @@ export const TestCaseStep = ({
             <CustomTableCell>{!activated ? getActionDescriptor(testStep.name)?.label :
                 <FormControl fullWidth>
                     <InputLabel id="select-action-label">Action</InputLabel>
-                    <Select
+                    <CustomSelect
                         labelId="select-action-label"
                         id="select-action"
                         value={testStep.name}
@@ -88,23 +90,22 @@ export const TestCaseStep = ({
                     >
                         {actionsDescriptors.map(actionDescriptor => <MenuItem key={actionDescriptor.name}
                                                                               value={actionDescriptor.name}>{actionDescriptor.label}</MenuItem>)}
-                    </Select>
+                    </CustomSelect>
                 </FormControl>
             }</CustomTableCell>
             <CustomTableCell>
                 {!activated ? testStep.element : <div style={{display: 'flex', alignItems: 'center'}}>
-                    <TextField value={testStep.element} style={{padding: '10px 5px'}}
-                               onChange={handleElementChange}/>
+                    <CustomTextField value={testStep.element} onChange={handleElementChange}/>
                     {getActionDescriptor(testStep.name)?.elementType === 'html' &&
                         <IconButton onClick={handleLocatorEnable} color={locatorEnabled ? 'primary' : 'default'}
                                     size={'small'}><LocationSearchingIcon/></IconButton>}
                 </div>}
             </CustomTableCell>
             <CustomTableCell>{!activated ? testStep.value :
-                <TextField value={testStep.value} style={{padding: '10px 5px'}}
-                           onChange={handleValueChange}/>}</CustomTableCell>
-            <CustomTableCell onClick={handleRemove}><IconButton size='small'
-                                                                            onClick={handleRemove}><ClearOutlinedIcon/></IconButton></CustomTableCell>
+                <CustomTextField value={testStep.value} onChange={handleValueChange}/>}</CustomTableCell>
+            <CustomTableCell onClick={handleRemove}>
+                <IconButton size='small' onClick={handleRemove}><ClearOutlinedIcon/></IconButton>
+            </CustomTableCell>
         </CustomTableRow>
     )
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import {CustomTableCell} from "../CustomTableCell";
 import {formatDuration, getTestRunBackgroundColor, getTestStepIconColor} from "../../utils";
-import {Box, Table, TableBody, TableHead, TableRow} from "@mui/material";
+import {Box, Table, TableBody, TableHead, TableRow, Typography} from "@mui/material";
 import {TestCase} from "../../interfaces/TestCase";
 import {TestRunStatusIcon} from "../TestRunStatusIcon";
 import {
@@ -45,7 +45,9 @@ export const TestRuns = ({testCase}: TestRunProps) => {
 
     return (
         <Box>
-            <Table sx={{minWidth: '650px'}} aria-label="test runs">
+            <Typography variant='h6' align='center'>Runs of Test Case: {testCase.title}</Typography>
+            {testCase.runs.length === 0 && <Typography variant='body1' align='center' sx={{color: 'gray'}}>No runs yet</Typography>}
+            {testCase.runs.length > 0 && <Table sx={{minWidth: '650px'}} aria-label="test runs">
                 <TableHead>
                     <TableRow>
                         <CustomTableCell>#</CustomTableCell>
@@ -76,8 +78,8 @@ export const TestRuns = ({testCase}: TestRunProps) => {
                         </CustomTableRow>
                     )}
                 </TableBody>
-            </Table>
-            <Box sx={{display: 'flex'}}>
+            </Table>}
+            {testCase.runs.length > 0 && <Box sx={{display: 'flex'}}>
                 <ResponsiveContainer width='40%' height={400}>
                     <BarChart margin={{top: 20}} data={statusData}>
                         <CartesianGrid strokeDasharray="3 3"/>
@@ -101,7 +103,7 @@ export const TestRuns = ({testCase}: TestRunProps) => {
                         <Line type="monotone" dataKey="duration" stroke="#8884d8"/>
                     </LineChart>
                 </ResponsiveContainer>
-            </Box>
+            </Box>}
         </Box>
     );
 }

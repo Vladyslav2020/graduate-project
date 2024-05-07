@@ -1,6 +1,9 @@
-import {getXPath} from "../utils";
+import {getXPath, isElementValid} from '../utils';
 
-const TYPE_ELEMENTS = ['input', 'textarea']
+const TYPE_ELEMENTS = ['input', 'textarea'];
+const TYPE_INPUT_ELEMENTS = ['text', 'password', 'email', 'url', 'number', 'datetime', 'datetime-local', 'date', 'month', 'time', 'week', 'range', 'search', 'tel', 'color', 'file'];
+
+let clickTargetXPath;
 
 export interface ActionHandler {
     actionName: string;
@@ -11,7 +14,6 @@ export interface ActionHandler {
 
 abstract class ActionHandlerBase implements ActionHandler {
     actionName = '';
-
     eventName = '';
 
     abstract handle(event): void;
@@ -27,7 +29,6 @@ abstract class ActionHandlerBase implements ActionHandler {
 
 class TypeActionHandler extends ActionHandlerBase {
     actionName = 'type';
-
     eventName = 'change';
 
     constructor() {
@@ -37,11 +38,8 @@ class TypeActionHandler extends ActionHandlerBase {
 
     handle(event): void {
         const target = event.target;
-        // check target to be input element type
-        // check allowed types of input element
-        console.log('target:', target, 'target.value', target.value)
         const tagName = target.tagName.toLowerCase();
-        if (!TYPE_ELEMENTS.includes(tagName) || !target.value.length) {
+        if (!TYPE_ELEMENTS.includes(tagName) || !TYPE_INPUT_ELEMENTS.includes(target.type) || !target.value.length) {
             return;
         }
         const xpath = getXPath(target);
@@ -59,9 +57,26 @@ class ClickActionHandler extends ActionHandlerBase {
     }
 
     handle(event): void {
-        console.log(this);
+        if (!isElementValid(event.target)) {
+            return;
+        }
         const xpath = getXPath(event.target);
-        console.log('XPath:', xpath)
+        clickTargetXPath = xpath;
+        this.saveAction(this.actionName, xpath, '');
+    }
+}
+
+class DoubleClickActionHandler extends ActionHandlerBase {
+    actionName = 'doubleClick';
+    eventName = 'dblclick';
+
+    constructor() {
+        super();
+        this.handle = this.handle.bind(this);
+    }
+
+    handle(event): void {
+        const xpath = isElementValid(event.target) ? getXPath(event.target) : clickTargetXPath;
         this.saveAction(this.actionName, xpath, '');
     }
 }
@@ -76,9 +91,7 @@ class PressKeyActionHandler extends ActionHandlerBase {
     }
 
     handle(event): void {
-        console.log('Key pressed', event.key, event.target);
         const xpath = getXPath(event.target);
-        console.log('current value', event.target.value);
         if (event.key === 'Enter') {
             if (TYPE_ELEMENTS.includes(event.target.tagName.toLowerCase()) && event.target.value) {
                 this.saveAction('type', xpath, event.target.value);
@@ -116,3 +129,4 @@ export const typeActionHandler = new TypeActionHandler();
 export const clickActionHandler = new ClickActionHandler();
 export const pressKeyActionHandler = new PressKeyActionHandler();
 export const contextMenuActionHandler = new ContextMenuActionHandle();
+export const doubleClickActionHandler = new DoubleClickActionHandler();

@@ -15,8 +15,6 @@ export const TestCaseSteps = () => {
     const [editingStep, setEditingStep] = useState(null);
     const [locatorEnabled, setLocatorEnabled] = useState(false);
 
-    console.log('steps', testCase?.steps);
-
     const sensors = useSensors(useSensor(PointerSensor, {
         activationConstraint: {
             distance: 5
@@ -79,6 +77,9 @@ export const TestCaseSteps = () => {
         const handleMessage = (message, sender, sendResponse) => {
             console.log('message:', message, 'sender', sender, 'sendResponse', sendResponse);
             console.log('locatorEnabled && message.locator', locatorEnabled && message.locator, message.locator, locatorEnabled)
+            if (!sender.tab || !sender.url) {
+                return;
+            }
             const steps = testCase?.steps as TestStep[];
             if (locatorEnabled && message.locator) {
                 dispatch({
@@ -109,7 +110,7 @@ export const TestCaseSteps = () => {
         return () => {
             chrome.runtime.onMessage.removeListener(handleMessage);
         }
-    }, [editingStep, locatorEnabled, setLocatorEnabled]);
+    }, [editingStep, locatorEnabled, setLocatorEnabled, testCase]);
 
     const addTestStep = () => {
         const steps = testCase?.steps as TestStep[];
@@ -118,7 +119,7 @@ export const TestCaseSteps = () => {
             steps: [...steps, {
                 id: generateUniqueId(),
                 name: 'click',
-                element: '/html[1]/body[1]'
+                element: '/html/body'
             }]
         });
     }
@@ -150,6 +151,7 @@ export const TestCaseSteps = () => {
                     </TableBody>
                 </Table>
             </DndContext>
+            {testCase?.steps?.length === 0 && <Typography variant='body1' align='center' sx={{color: 'gray'}}>No steps yet</Typography>}
             <Button size='small' variant='text' sx={{marginTop: '5px'}} onClick={addTestStep}>+ Test Step</Button>
         </div>
     );
