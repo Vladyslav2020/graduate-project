@@ -97,14 +97,15 @@ export const TestCaseStep = ({
                 {!activated ? testStep.element : <div style={{display: 'flex', alignItems: 'center'}}>
                     <CustomTextField value={testStep.element} onChange={handleElementChange}/>
                     {getActionDescriptor(testStep.name)?.elementType === 'html' &&
-                        <IconButton onClick={handleLocatorEnable} color={locatorEnabled ? 'primary' : 'default'}
+                        <IconButton title='Locate HTML element' onClick={handleLocatorEnable}
+                                    color={locatorEnabled ? 'primary' : 'default'}
                                     size={'small'}><LocationSearchingIcon/></IconButton>}
                 </div>}
             </CustomTableCell>
             <CustomTableCell>{!activated ? testStep.value :
                 <CustomTextField value={testStep.value} onChange={handleValueChange}/>}</CustomTableCell>
             <CustomTableCell onClick={handleRemove}>
-                <IconButton size='small' onClick={handleRemove}><ClearOutlinedIcon/></IconButton>
+                <IconButton title='Remove test step' size='small' onClick={handleRemove}><ClearOutlinedIcon/></IconButton>
             </CustomTableCell>
         </CustomTableRow>
     )

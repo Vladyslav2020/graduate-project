@@ -8,6 +8,9 @@ var webpack = require('webpack'),
 var { CleanWebpackPlugin } = require('clean-webpack-plugin');
 var ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 var ReactRefreshTypeScript = require('react-refresh-typescript');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
@@ -133,6 +136,9 @@ var options = {
       .concat(['.js', '.jsx', '.ts', '.tsx', '.css']),
   },
   plugins: [
+    new webpack.DefinePlugin({
+      'process.env.OPENAI_API_KEY': JSON.stringify(process.env.OPENAI_API_KEY),
+    }),
     isDevelopment && new ReactRefreshWebpackPlugin(),
     new CleanWebpackPlugin({ verbose: false }),
     new webpack.ProgressPlugin(),

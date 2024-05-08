@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import PlayArrowOutlinedIcon from '@mui/icons-material/PlayArrowOutlined';
 import StopCircleOutlinedIcon from '@mui/icons-material/StopCircleOutlined';
@@ -6,6 +6,8 @@ import ArrowBackIosNewRoundedIcon from '@mui/icons-material/ArrowBackIosNewRound
 import {Command} from "../Command";
 import {useDispatch, useSelector} from 'react-redux';
 import {CLOSE_TEST_RUN, GO_TO_BACK_PAGE, RootState} from "../../redux/Reducers";
+import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
+import {CodeGenerationDialog} from "../CodeGenerationDialog";
 
 type ActionsProps = {
     runTestCase: () => void;
@@ -17,6 +19,8 @@ export const Actions = ({runTestCase, recordingEnabled, setRecordingEnabled}: Ac
     const dispatch = useDispatch();
     const pagesHistory = useSelector((state: RootState) => state.root.pagesHistory);
     const lastPage = pagesHistory[pagesHistory.length - 1];
+    const testCase = useSelector((state: RootState) => state.root.activeTestCase);
+    const [codeGenerationDialogOpen, setCodeGenerationDialogOpen] = useState(false);
 
     const handleGoBackAction = () => {
         if (lastPage === 'run') {
@@ -40,6 +44,10 @@ export const Actions = ({runTestCase, recordingEnabled, setRecordingEnabled}: Ac
 
     }
 
+    const handleCodeGenerationAction = () => {
+        setCodeGenerationDialogOpen(true);
+    }
+
     return (
         <div
             style={{
@@ -58,6 +66,9 @@ export const Actions = ({runTestCase, recordingEnabled, setRecordingEnabled}: Ac
                     <Command title='Run Test Case' handler={runTestCase} IconComponent={PlayArrowOutlinedIcon}/>}
                 {lastPage === 'testCases' &&
                     <Command title='Run Test Suite' handler={stubHandler} IconComponent={PlayArrowOutlinedIcon}/>}
+                {lastPage === 'testCases' &&
+                    <Command title='Generate code' handler={handleCodeGenerationAction} IconComponent={AutoAwesomeOutlinedIcon}/>}
+                {testCase && <CodeGenerationDialog testCase={testCase} open={codeGenerationDialogOpen} setOpen={setCodeGenerationDialogOpen}/>}
             </div>
         </div>
     );

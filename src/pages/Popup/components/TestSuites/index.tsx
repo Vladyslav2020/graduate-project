@@ -317,7 +317,7 @@ export const TestSuites = () => {
                             hidden
                             onChange={handleImportFile}
                         />
-                        <IconButton color='primary' onClick={importTestSuite}>
+                        <IconButton title='Import test suite' color='primary' onClick={importTestSuite}>
                             <GetAppRoundedIcon/>
                         </IconButton>
                         <Button variant="outlined" size='small' onClick={handleAddTestSuiteClick}>+ Test Suite</Button>
@@ -351,11 +351,13 @@ export const TestSuites = () => {
                                     <Typography> {testSuite.title}</Typography>
                                 </div>
                                 <div>
-                                    <IconButton sx={{marginLeft: '20px'}} onClick={() => exportTestSuite(testSuite)}
+                                    <IconButton title='Export test suite' sx={{marginLeft: '20px'}}
+                                                onClick={() => exportTestSuite(testSuite)}
                                                 color='primary'><PublishRoundedIcon/></IconButton>
                                     <Button size='small' variant="text"
                                             onClick={() => handleAddTestCaseClick(testSuite)}>+ Test Case</Button>
-                                    <IconButton onClick={(event) => handleMoreTestSuiteOptionsClick(event, testSuite)}>
+                                    <IconButton title='More actions'
+                                                onClick={(event) => handleMoreTestSuiteOptionsClick(event, testSuite)}>
                                         <MoreVertRoundedIcon/>
                                     </IconButton>
                                 </div>
@@ -376,10 +378,10 @@ export const TestSuites = () => {
                                         }}>
                                             <Typography>{testCase.title}</Typography>
                                             <div>
-                                                <IconButton
-                                                    onClick={(event) => handleShowRuns(event, testSuite, testCase)}><ShowChartRoundedIcon/></IconButton>
-                                                <IconButton
-                                                    onClick={(event) => handleMoreTestCaseOptionsClick(event, testCase)}><MoreVertRoundedIcon/></IconButton>
+                                                <IconButton title='View statistics'
+                                                            onClick={(event) => handleShowRuns(event, testSuite, testCase)}><ShowChartRoundedIcon/></IconButton>
+                                                <IconButton title='More actions'
+                                                            onClick={(event) => handleMoreTestCaseOptionsClick(event, testCase)}><MoreVertRoundedIcon/></IconButton>
                                             </div>
                                         </Button>
                                     ))}
