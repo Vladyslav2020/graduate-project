@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {Logo} from "./components/Logo";
 import {Actions} from "./components/Actions";
 import {TestSuites} from "./components/TestSuites";
@@ -16,6 +16,7 @@ export const Popup = () => {
     const pagesHistory = useSelector((state: RootState) => state.root.pagesHistory);
     const lastPage = pagesHistory[pagesHistory.length - 1];
     const dispatch = useDispatch();
+    const [recordingEnabled, setRecordingEnabled] = useState(false);
 
     const runTestCase = () => {
         const newTestRun: TestRun = {
@@ -34,13 +35,13 @@ export const Popup = () => {
             <header style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px'}}>
                 <Logo/>
                 <div style={{flexGrow: 2}}>
-                    <Actions runTestCase={runTestCase}/>
+                    <Actions recordingEnabled={recordingEnabled} setRecordingEnabled={setRecordingEnabled} runTestCase={runTestCase}/>
                 </div>
             </header>
             <div style={{display: 'flex', justifyContent: lastPage === 'testSuites' ? 'center' : 'space-between'}}>
                 <TestSuites/>
                 {lastPage !== 'testSuites' && <div style={{flexGrow: '1'}}>
-                    {lastPage === 'testCases' && <TestCaseSteps/>}
+                    {lastPage === 'testCases' && <TestCaseSteps recordingEnabled={recordingEnabled}/>}
                     {lastPage === 'runs' && <TestRuns testCase={activeTestCase as TestCase}/>}
                     {lastPage === 'run' && <TestRunComponent testCase={activeTestCase as TestCase}/>}
                 </div>}

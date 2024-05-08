@@ -9,7 +9,11 @@ import {useDispatch, useSelector} from "react-redux";
 import {actionsDescriptors, generateUniqueId} from "../../utils";
 import {CustomTableCell} from "../CustomTableCell";
 
-export const TestCaseSteps = () => {
+type TestCaseStepsProps = {
+    recordingEnabled: boolean;
+}
+
+export const TestCaseSteps = ({recordingEnabled}: TestCaseStepsProps) => {
     const testCase = useSelector((state: RootState) => state.root.activeTestCase);
     const dispatch = useDispatch();
     const [editingStep, setEditingStep] = useState(null);
@@ -77,7 +81,7 @@ export const TestCaseSteps = () => {
         const handleMessage = (message, sender, sendResponse) => {
             console.log('message:', message, 'sender', sender, 'sendResponse', sendResponse);
             console.log('locatorEnabled && message.locator', locatorEnabled && message.locator, message.locator, locatorEnabled)
-            if (!sender.tab || !sender.url) {
+            if (!sender.url || (!sender.tab && !sender.url.includes('background'))) {
                 return;
             }
             const steps = testCase?.steps as TestStep[];
@@ -92,16 +96,19 @@ export const TestCaseSteps = () => {
                 setLocatorEnabled(false);
                 chrome.runtime.sendMessage({command: 'disable-locator-selection'});
             }
-            if (message.action && actionsDescriptors.some(actionDescriptor => actionDescriptor.name === message.action)) {
-                dispatch({
-                    type: SET_TEST_STEPS,
-                    steps: [...steps, {
-                        id: generateUniqueId(),
-                        name: message.action,
-                        element: message.element,
-                        value: message.value
-                    }]
-                });
+            if (recordingEnabled && message.type === 'captureTestStep') {
+                const newStep = message.step;
+                if (actionsDescriptors.some(actionDescriptor => actionDescriptor.name === newStep.action)) {
+                    dispatch({
+                        type: SET_TEST_STEPS,
+                        steps: [...steps, {
+                            id: generateUniqueId(),
+                            name: newStep.action,
+                            element: newStep.element,
+                            value: newStep.value
+                        }]
+                    });
+                }
             }
         }
 
@@ -110,7 +117,7 @@ export const TestCaseSteps = () => {
         return () => {
             chrome.runtime.onMessage.removeListener(handleMessage);
         }
-    }, [editingStep, locatorEnabled, setLocatorEnabled, testCase]);
+    }, [editingStep, locatorEnabled, setLocatorEnabled, testCase, recordingEnabled]);
 
     const addTestStep = () => {
         const steps = testCase?.steps as TestStep[];

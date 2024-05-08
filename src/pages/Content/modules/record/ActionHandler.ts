@@ -20,9 +20,12 @@ abstract class ActionHandlerBase implements ActionHandler {
 
     protected saveAction(actionName, element, value) {
         chrome.runtime.sendMessage({
-            action: actionName,
-            element,
-            value,
+            type: 'captureTestStep',
+            step: {
+                action: actionName,
+                element,
+                value,
+            }
         });
     }
 }
@@ -104,7 +107,7 @@ class PressKeyActionHandler extends ActionHandlerBase {
     }
 }
 
-class ContextMenuActionHandle extends ActionHandlerBase {
+class ContextMenuActionHandler extends ActionHandlerBase {
     actionName = 'contextMenu';
     eventName = 'contextmenu';
 
@@ -118,7 +121,7 @@ class ContextMenuActionHandle extends ActionHandlerBase {
         const xpath = getXPath(targetElement);
 
         chrome.runtime.sendMessage({
-            action: 'contextMenuClicked',
+            type: 'contextMenuClicked',
             element: {value: targetElement.value, innerText: targetElement.innerText, title: targetElement.title},
             xpath
         });
@@ -128,5 +131,5 @@ class ContextMenuActionHandle extends ActionHandlerBase {
 export const typeActionHandler = new TypeActionHandler();
 export const clickActionHandler = new ClickActionHandler();
 export const pressKeyActionHandler = new PressKeyActionHandler();
-export const contextMenuActionHandler = new ContextMenuActionHandle();
+export const contextMenuActionHandler = new ContextMenuActionHandler();
 export const doubleClickActionHandler = new DoubleClickActionHandler();

@@ -57,59 +57,57 @@ export const TestRunComponent = ({testCase}: TestRunProps) => {
     }, []);
 
     return (
-        <>
-            <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        m: 'auto',
-                        width: 'fit-content',
-                    }}
-                >
-                <Typography variant='h6' align='center'>Run of Test Case: {testCase.title}</Typography>
-                <Table sx={{minWidth: 650}} aria-label="test run steps">
-                        <TableHead>
-                            <TableRow>
-                                <CustomTableCell>Action</CustomTableCell>
-                                <CustomTableCell>Element</CustomTableCell>
-                                <CustomTableCell>Value</CustomTableCell>
-                                <CustomTableCell>Status</CustomTableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {testRun?.steps.map((step) =>
-                                <TableRow
-                                    key={step.id}
-                                    sx={{
-                                        "&:last-child td, &:last-child th": {border: 0},
-                                        backgroundColor: getTestRunBackgroundColor(step),
-                                    }}
-                                >
-                                    <CustomTableCell>{getActionDescriptor(step.name)?.label}</CustomTableCell>
-                                    <CustomTableCell>
-                                        {step.element}
-                                    </CustomTableCell>
-                                    <CustomTableCell>{step.value}</CustomTableCell>
-                                    <CustomTableCell>
-                                        <div style={{
-                                            display: 'flex',
-                                            alignItems: 'center'
-                                        }}><TestRunStatusIcon run={step}/></div>
-                                    </CustomTableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                    {testRun?.duration &&
-                        <Typography variant="body1">Duration: {formatDuration(testRun.duration)}</Typography>}
-                    <Typography variant="h6">Logs</Typography>
-                    {testRun?.logs.map((log, index) =>
-                        <Typography key={index}>{log}</Typography>
+        <Box
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                m: 'auto',
+                width: 'fit-content',
+            }}
+        >
+            <Typography variant='h6' align='center'>Run of Test Case: {testCase.title}</Typography>
+            <Table sx={{minWidth: 650}} aria-label="test run steps">
+                <TableHead>
+                    <TableRow>
+                        <CustomTableCell>Action</CustomTableCell>
+                        <CustomTableCell>Element</CustomTableCell>
+                        <CustomTableCell>Value</CustomTableCell>
+                        <CustomTableCell>Status</CustomTableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {testRun?.steps.map((step) =>
+                        <TableRow
+                            key={step.id}
+                            sx={{
+                                "&:last-child td, &:last-child th": {border: 0},
+                                backgroundColor: getTestRunBackgroundColor(step),
+                            }}
+                        >
+                            <CustomTableCell>{getActionDescriptor(step.name)?.label}</CustomTableCell>
+                            <CustomTableCell>
+                                {step.element}
+                            </CustomTableCell>
+                            <CustomTableCell>{step.value}</CustomTableCell>
+                            <CustomTableCell>
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                }}><TestRunStatusIcon run={step}/></div>
+                            </CustomTableCell>
+                        </TableRow>
                     )}
-                    {testRun?.screenshot &&
-                        <Box sx={{maxWidth: '1000px', overflow: 'auto'}}><img src={testRun.screenshot}
-                                                                              alt="screenshot"/></Box>}
-                </Box>
-        </>
+                </TableBody>
+            </Table>
+            {testRun?.duration &&
+                <Typography variant="body1">Duration: {formatDuration(testRun.duration)}</Typography>}
+            <Typography variant="h6">Logs</Typography>
+            {testRun?.logs.map((log, index) =>
+                <Typography key={index}>{log}</Typography>
+            )}
+            {testRun?.screenshot &&
+                <Box sx={{maxWidth: '800px', overflow: 'auto'}}><img src={testRun.screenshot}
+                                                                      alt="screenshot"/></Box>}
+        </Box>
     );
 }

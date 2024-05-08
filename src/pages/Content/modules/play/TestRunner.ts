@@ -5,10 +5,10 @@ import {
     ExecutionResult,
     openActionExecutor,
     pressKeyActionExecutor,
-    typeActionExecutor,
+    typeActionExecutor, verifyEditableActionExecutor,
     verifyTextActionExecutor,
     verifyTitleActionExecutor,
-    verifyValueActionExecutor
+    verifyValueActionExecutor, verifyVisibleActionExecutor
 } from "./ActionExecutor";
 import {TestStep} from "../../../Popup/interfaces/TestStep";
 import {TestRunStatus} from "../../../Popup/interfaces/TestRun";
@@ -87,3 +87,5 @@ testRunner.addActionExecutor(pressKeyActionExecutor);
 testRunner.addActionExecutor(verifyValueActionExecutor);
 testRunner.addActionExecutor(verifyTextActionExecutor);
 testRunner.addActionExecutor(verifyTitleActionExecutor);
+testRunner.addActionExecutor(verifyEditableActionExecutor);
+testRunner.addActionExecutor(verifyVisibleActionExecutor);

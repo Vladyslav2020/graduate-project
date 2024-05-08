@@ -2,6 +2,8 @@ import {TestStep} from "../../../Popup/interfaces/TestStep";
 import {waitForElementByXPath} from "../utils";
 import {TestRunStatus} from "../../../Popup/interfaces/TestRun";
 
+const EDITABLE_TAGS = ['input', 'textarea', 'select'];
+
 export interface ExecutionResult {
     status: TestRunStatus;
     message: string;
@@ -162,7 +164,10 @@ class VerifyValueActionExecutor implements ActionExecutor {
             if (value === testStep.value) {
                 return {status: TestRunStatus.PASSED, message: `Executed action: Verify value <${value}>`};
             } else {
-                return {status: TestRunStatus.FAILED, message: `Expected value <${testStep.value}>, but found <${value}>`};
+                return {
+                    status: TestRunStatus.FAILED,
+                    message: `Expected value <${testStep.value}>, but found <${value}>`
+                };
             }
         } catch (e) {
             return {status: TestRunStatus.FAILED, message: 'Element not found'};
@@ -180,7 +185,10 @@ class VerifyTextActionExecutor implements ActionExecutor {
             if (text === testStep.value) {
                 return {status: TestRunStatus.PASSED, message: `Executed action: Verify text <${text}>`};
             } else {
-                return {status: TestRunStatus.FAILED, message: `Expected text <${testStep.value}>, but found <${text}>`};
+                return {
+                    status: TestRunStatus.FAILED,
+                    message: `Expected text <${testStep.value}>, but found <${text}>`
+                };
             }
         } catch (e) {
             return {status: TestRunStatus.FAILED, message: 'Element not found'};
@@ -198,7 +206,53 @@ class VerifyTitleActionExecutor implements ActionExecutor {
             if (title === testStep.value) {
                 return {status: TestRunStatus.PASSED, message: `Executed action: Verify title <${title}>`};
             } else {
-                return {status: TestRunStatus.FAILED, message: `Expected title <${testStep.value}>, but found <${title}>`};
+                return {
+                    status: TestRunStatus.FAILED,
+                    message: `Expected title <${testStep.value}>, but found <${title}>`
+                };
+            }
+        } catch (e) {
+            return {status: TestRunStatus.FAILED, message: 'Element not found'};
+        }
+    }
+}
+
+class VerifyEditableActionExecutor implements ActionExecutor {
+    name = 'verifyEditable';
+
+    async execute(testStep: TestStep): Promise<ExecutionResult> {
+        try {
+            const element = await waitForElementByXPath(testStep.element) as HTMLInputElement;
+            const editable = EDITABLE_TAGS.includes(element.tagName.toLowerCase()) && !element.disabled && !element.readOnly || element.contentEditable === 'true';
+            if (editable) {
+                return {status: TestRunStatus.PASSED, message: `Executed action: Verify editable <${editable}>`};
+            } else {
+                return {
+                    status: TestRunStatus.FAILED,
+                    message: 'Expected editable, but found not editable'
+                };
+            }
+        } catch (e) {
+            return {status: TestRunStatus.FAILED, message: 'Element not found'};
+        }
+    }
+}
+
+class VerifyVisibleActionExecutor implements ActionExecutor {
+    name = 'verifyVisible';
+
+    async execute(testStep: TestStep): Promise<ExecutionResult> {
+        try {
+            const element = await waitForElementByXPath(testStep.element) as HTMLElement;
+            // check visibility hidden
+            const visible = element.style.display !== 'none' && element.style.visibility !== 'hidden';
+            if (visible) {
+                return {status: TestRunStatus.PASSED, message: `Executed action: Verify visible <${visible}>`};
+            } else {
+                return {
+                    status: TestRunStatus.FAILED,
+                    message: 'Expected visible, but found not visible'
+                };
             }
         } catch (e) {
             return {status: TestRunStatus.FAILED, message: 'Element not found'};
@@ -214,3 +268,5 @@ export const pressKeyActionExecutor = new PressKeyActionExecutor();
 export const verifyValueActionExecutor = new VerifyValueActionExecutor();
 export const verifyTextActionExecutor = new VerifyTextActionExecutor();
 export const verifyTitleActionExecutor = new VerifyTitleActionExecutor();
+export const verifyEditableActionExecutor = new VerifyEditableActionExecutor();
+export const verifyVisibleActionExecutor = new VerifyVisibleActionExecutor();

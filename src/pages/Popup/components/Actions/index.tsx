@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import PlayArrowOutlinedIcon from '@mui/icons-material/PlayArrowOutlined';
 import StopCircleOutlinedIcon from '@mui/icons-material/StopCircleOutlined';
@@ -9,13 +9,14 @@ import {CLOSE_TEST_RUN, GO_TO_BACK_PAGE, RootState} from "../../redux/Reducers";
 
 type ActionsProps = {
     runTestCase: () => void;
+    recordingEnabled: boolean;
+    setRecordingEnabled: (enabled: boolean) => void;
 }
 
-export const Actions = ({runTestCase}: ActionsProps) => {
+export const Actions = ({runTestCase, recordingEnabled, setRecordingEnabled}: ActionsProps) => {
     const dispatch = useDispatch();
     const pagesHistory = useSelector((state: RootState) => state.root.pagesHistory);
     const lastPage = pagesHistory[pagesHistory.length - 1];
-    const [recordingEnabled, setRecordingEnabled] = useState(false);
 
     const handleGoBackAction = () => {
         if (lastPage === 'run') {

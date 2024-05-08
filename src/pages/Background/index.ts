@@ -17,6 +17,12 @@ chrome.action.onClicked.addListener(() => {
             height: 650
         }, (window) => {
             popupWindowId = (window as chrome.windows.Window).id;
+
+            chrome.windows.onRemoved.addListener((windowId) => {
+                if (windowId === popupWindowId) {
+                    popupWindowId = null;
+                }
+            });
         });
     } else {
         chrome.windows.update(popupWindowId, {focused: true});

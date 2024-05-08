@@ -29,28 +29,26 @@ class ContextMenuExtender {
     }
 
     private captureContextMenuElement(message, sender, sendResponse) {
-        if (message.action === 'contextMenuClicked') {
+        if (message.type === 'contextMenuClicked') {
             this.contextMenuElement = {element: message.element, xpath: message.xpath};
         }
     }
 
     private saveAction(actionName, element, value) {
         chrome.runtime.sendMessage({
-            action: actionName,
-            element,
-            value,
+            type: 'captureTestStep',
+            step: {
+                action: actionName,
+                element,
+                value,
+            }
         });
     }
 
     private handleContextMenuClick(info, tab) {
-        // Check which menu item was clicked based on its ID
-        console.log("Info", info, 'Tab', tab);
-
         if (!this.contextMenuElement) {
             return;
         }
-
-        console.log("Context Menu Element", this.contextMenuElement);
 
         switch (info.menuItemId) {
             case "verifyValue":
@@ -64,6 +62,9 @@ class ContextMenuExtender {
                 break;
             case "verifyEditable":
                 this.saveAction('verifyEditable', this.contextMenuElement.xpath, '');
+                break;
+            case "verifyVisible":
+                this.saveAction('verifyVisible', this.contextMenuElement.xpath, '');
                 break;
             default:
                 break;
