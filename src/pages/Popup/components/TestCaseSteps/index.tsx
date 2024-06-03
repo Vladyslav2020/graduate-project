@@ -11,9 +11,11 @@ import {CustomTableCell} from "../CustomTableCell";
 
 type TestCaseStepsProps = {
     recordingEnabled: boolean;
+    recordingTab: any;
+    setRecordingTab: (arg: any) => void;
 }
 
-export const TestCaseSteps = ({recordingEnabled}: TestCaseStepsProps) => {
+export const TestCaseSteps = ({recordingEnabled, recordingTab, setRecordingTab}: TestCaseStepsProps) => {
     const testCase = useSelector((state: RootState) => state.root.activeTestCase);
     const dispatch = useDispatch();
     const [editingStep, setEditingStep] = useState(null);
@@ -99,14 +101,25 @@ export const TestCaseSteps = ({recordingEnabled}: TestCaseStepsProps) => {
             if (recordingEnabled && message.type === 'captureTestStep') {
                 const newStep = message.step;
                 if (actionsDescriptors.some(actionDescriptor => actionDescriptor.name === newStep.action)) {
+                    const newTestSteps: any[] = [];
+                    if (sender.tab && sender.tab.id !== recordingTab?.id) {
+                        newTestSteps.push({
+                            id: generateUniqueId(),
+                            name: 'open',
+                            element: sender.tab.url,
+                            value: '',
+                        });
+                        setRecordingTab(sender.tab);
+                    }
+                    newTestSteps.push({
+                        id: generateUniqueId(),
+                        name: newStep.action,
+                        element: newStep.element,
+                        value: newStep.value
+                    });
                     dispatch({
                         type: SET_TEST_STEPS,
-                        steps: [...steps, {
-                            id: generateUniqueId(),
-                            name: newStep.action,
-                            element: newStep.element,
-                            value: newStep.value
-                        }]
+                        steps: [...steps, ...newTestSteps],
                     });
                 }
             }
@@ -117,7 +130,7 @@ export const TestCaseSteps = ({recordingEnabled}: TestCaseStepsProps) => {
         return () => {
             chrome.runtime.onMessage.removeListener(handleMessage);
         }
-    }, [editingStep, locatorEnabled, setLocatorEnabled, testCase, recordingEnabled]);
+    }, [editingStep, locatorEnabled, setLocatorEnabled, testCase, recordingEnabled, recordingTab, setRecordingTab]);
 
     const addTestStep = () => {
         const steps = testCase?.steps as TestStep[];
@@ -158,7 +171,8 @@ export const TestCaseSteps = ({recordingEnabled}: TestCaseStepsProps) => {
                     </TableBody>
                 </Table>
             </DndContext>
-            {testCase?.steps?.length === 0 && <Typography variant='body1' align='center' sx={{color: 'gray'}}>No steps yet</Typography>}
+            {testCase?.steps?.length === 0 &&
+                <Typography variant='body1' align='center' sx={{color: 'gray'}}>No steps yet</Typography>}
             <Button size='small' variant='text' sx={{marginTop: '5px'}} onClick={addTestStep}>+ Test Step</Button>
         </div>
     );

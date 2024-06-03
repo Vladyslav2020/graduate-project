@@ -9,7 +9,8 @@
     "tabs",
     "activeTab",
     "<all_urls>",
-    "downloads"
+    "downloads",
+    "storage"
   ],
   "action": {
   },

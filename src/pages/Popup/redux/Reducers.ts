@@ -36,6 +36,12 @@ const initialTestSuitesState: TestSuitesState = {
         id: 'test-suite-1', title: 'Test Suite 1', testCases: [{
             id: '1', title: 'Test case 1', runs: [], steps: [
                 {
+                    "id": "0",
+                    "name": "open",
+                    "element": "https://todomvc.com/examples/react/dist/",
+                    "value": ""
+                },
+                {
                     "id": "1",
                     "name": "click",
                     "element": "/html[1]/body[1]/div[1]/div[2]/div[1]/input[1]",
