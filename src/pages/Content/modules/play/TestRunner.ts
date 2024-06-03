@@ -16,11 +16,22 @@ import {TestRunStatus} from "../../../Popup/interfaces/TestRun";
 class TestRunner {
     private actionExecutors: { [key: string]: ActionExecutor } = {};
 
-    public async runTestCase(testCase: TestCase) {
+    public async runTestCase(testCase: TestCase, startTestStep?, stepExecutionResult?) {
         try {
+            let executionStarted = !startTestStep;
             for (const testStep of testCase.steps) {
-                chrome.runtime.sendMessage({type: 'start-test-step-execution', stepId: testStep.id});
-                const executionResult = await this.actionExecutors[testStep.name].execute(testStep);
+                let executionResult = stepExecutionResult;
+                if (!executionStarted && testStep.id !== startTestStep?.id) {
+                    continue;
+                } else if (!executionStarted && testStep.id === startTestStep?.id) {
+                    executionStarted = true;
+                } else {
+                    chrome.runtime.sendMessage({type: 'start-test-step-execution', stepId: testStep.id});
+                    if (testStep.name === 'open') {
+                        chrome.storage.local.set({executionData: {testCase: testCase, testStep: testStep}});
+                    }
+                    executionResult = await this.actionExecutors[testStep.name].execute(testStep);
+                }
                 chrome.runtime.sendMessage({
                     type: 'finish-test-step-execution',
                     stepId: testStep.id,

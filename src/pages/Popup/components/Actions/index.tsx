@@ -11,11 +11,12 @@ import {CodeGenerationDialog} from "../CodeGenerationDialog";
 
 type ActionsProps = {
     runTestCase: () => void;
+    runTestSuite: () => void;
     recordingEnabled: boolean;
     setRecordingEnabled: (enabled: boolean) => void;
 }
 
-export const Actions = ({runTestCase, recordingEnabled, setRecordingEnabled}: ActionsProps) => {
+export const Actions = ({runTestCase, runTestSuite, recordingEnabled, setRecordingEnabled}: ActionsProps) => {
     const dispatch = useDispatch();
     const pagesHistory = useSelector((state: RootState) => state.root.pagesHistory);
     const lastPage = pagesHistory[pagesHistory.length - 1];
@@ -40,10 +41,6 @@ export const Actions = ({runTestCase, recordingEnabled, setRecordingEnabled}: Ac
         chrome.runtime.sendMessage({command: 'unsubscribe-recorder'});
     }
 
-    const stubHandler = () => {
-
-    }
-
     const handleCodeGenerationAction = () => {
         setCodeGenerationDialogOpen(true);
     }
@@ -65,7 +62,7 @@ export const Actions = ({runTestCase, recordingEnabled, setRecordingEnabled}: Ac
                 {pagesHistory.some(page => page === 'testCases') &&
                     <Command title='Run Test Case' handler={runTestCase} IconComponent={PlayArrowOutlinedIcon}/>}
                 {lastPage === 'testCases' &&
-                    <Command title='Run Test Suite' handler={stubHandler} IconComponent={PlayArrowOutlinedIcon}/>}
+                    <Command title='Run Test Suite' handler={runTestSuite} IconComponent={PlayArrowOutlinedIcon}/>}
                 {lastPage === 'testCases' &&
                     <Command title='Generate code' handler={handleCodeGenerationAction} IconComponent={AutoAwesomeOutlinedIcon}/>}
                 {testCase && <CodeGenerationDialog testCase={testCase} open={codeGenerationDialogOpen} setOpen={setCodeGenerationDialogOpen}/>}
