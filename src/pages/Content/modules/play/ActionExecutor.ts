@@ -21,21 +21,22 @@ class OpenActionExecutor implements ActionExecutor {
     async execute(testStep: TestStep): Promise<ExecutionResult> {
         const url = testStep.element;
 
-        return new Promise((resolve, reject) => {
-            function domContentLoadedHandler() {
-                document.removeEventListener('DOMContentLoaded', domContentLoadedHandler);
-                resolve({status: TestRunStatus.PASSED, message: 'Executed action: Open URL'});
+        return new Promise(async (resolve) => {
+            function handleError() {
+                resolve({status: TestRunStatus.FAILED, message: 'Failed to load the URL'});
+                setTimeout(() => window.location.href, 500);
             }
 
-            document.addEventListener('DOMContentLoaded', domContentLoadedHandler);
-
-            function errorHandler() {
-                window.removeEventListener('error', errorHandler);
-                reject(new Error('Failed to load the URL'));
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                console.log('response', response, response.ok);
+                if (!response.ok) {
+                    handleError();
+                }
+                window.location.href = url;
+            } catch (error) {
+                handleError();
             }
-
-            window.addEventListener('error', errorHandler);
-            window.open(url);
         });
     }
 }
