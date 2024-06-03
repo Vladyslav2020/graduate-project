@@ -7,7 +7,7 @@ const openai = new OpenAI({apiKey: process.env.OPENAI_API_KEY, dangerouslyAllowB
 class AIGenerationService {
     private readonly systemMessage: ChatCompletionMessageParam = {
         role: 'system',
-        content: 'User will give you steps for UI test case. Your task is to automate this test case with JavaScript script including test method for testing in Chrome browser environment. The result should only include code without additional instructions.'
+        content: 'User will give you steps for UI test case containing consequent steps like open url, click element by xpath and so on. Your task is to automate this test case with JavaScript (Selenium) code including test method for testing in Chrome browser environment. The result should only include code without additional instructions.'
     };
 
     async getCodeForTestCase(testCase: TestCase, callback): Promise<string> {

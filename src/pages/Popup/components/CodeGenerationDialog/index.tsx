@@ -4,6 +4,15 @@ import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButt
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import {TestCase} from "../../interfaces/TestCase";
 import {aiGenerationService} from "../../services/AIGenerationService";
+import ReactMarkdown from 'react-markdown';
+import hljs from 'highlight.js/lib/core';
+import javascript from 'highlight.js/lib/languages/javascript';
+import remarkHighlight from 'remark-highlight.js';
+import remarkGfm from 'remark-gfm';
+import 'highlight.js/styles/default.css';
+import './index.css';
+
+hljs.registerLanguage('javascript', javascript);
 
 type CodeGenerationDialogProps = {
     testCase: TestCase;
@@ -12,10 +21,12 @@ type CodeGenerationDialogProps = {
 };
 
 export const CodeGenerationDialog = ({testCase, open, setOpen}: CodeGenerationDialogProps) => {
-    const [generatedCode, setGeneratedCode] = useState('');
+    const [generatedCode, setGeneratedCode] = useState(`\`\`\`javascript
+// code will be generated here
+\`\`\``);
     const [codeGenerating, setCodeGenerating] = useState(false);
     const [language, setLanguage] = useState('JavaScript');
-    const textFieldRef = useRef<HTMLDivElement>(null);
+    const codeFieldRef = useRef<HTMLDivElement>(null);
 
     const handleClose = () => {
         setOpen(false);
@@ -28,10 +39,31 @@ export const CodeGenerationDialog = ({testCase, open, setOpen}: CodeGenerationDi
     };
 
     useEffect(() => {
-        if (textFieldRef.current) {
-            const textarea = textFieldRef.current.querySelector('textarea') as HTMLTextAreaElement;
-            textarea.scrollTop = textarea.scrollHeight;
+        if (codeFieldRef.current) {
+            const codeSnippet = codeFieldRef.current.querySelector('.code-snippet') as HTMLDivElement;
+            codeSnippet.scrollTop = codeSnippet.scrollHeight;
         }
+    }, [generatedCode]);
+
+    const components: any = {
+        code: ({node, inline, className, children, ...props}) => {
+            const match = /language-(\w+)/.exec(className || '');
+            return !inline && match ? (
+                <pre className={className} {...props}>
+                  <code className={`hljs ${match[0]}`}>{children}</code>
+                </pre>
+            ) : (
+                <code className={className} {...props}>
+                    {children}
+                </code>
+            );
+        }
+    };
+
+    useEffect(() => {
+        document.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightBlock(block as HTMLElement);
+        });
     }, [generatedCode]);
 
     return (
@@ -47,23 +79,10 @@ export const CodeGenerationDialog = ({testCase, open, setOpen}: CodeGenerationDi
                         }}
                     />
                 </Box>
-                <Box mt={2} position="relative">
-                    <TextField
-                        ref={textFieldRef}
-                        label="Generated Code"
-                        multiline
-                        rows={10}
-                        value={generatedCode}
-                        InputProps={{
-                            readOnly: true,
-                        }}
-                        sx={{
-                            width: '100%',
-                            '& .MuiInputBase-root': {
-                                paddingRight: 0,
-                            },
-                        }}
-                    />
+                <Box ref={codeFieldRef} sx={{backgroundColor: '#F3F3F3'}}
+                     mt={2} position="relative">
+                    <ReactMarkdown className='code-snippet' remarkPlugins={[remarkGfm, remarkHighlight as any]}
+                                   components={components}>{generatedCode}</ReactMarkdown>
                     <CopyToClipboard text={generatedCode}>
                         <IconButton title='Copy to Clipboard' sx={{
                             position: 'absolute',

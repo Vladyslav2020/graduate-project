@@ -1,0 +1,18 @@
+pre {
+    font-size: 1.1em;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+code {
+    font-size: 1.1em;
+}
+
+.code-snippet {
+    height: 200px;
+    max-height: 200px;
+    background-color: #F3F3F3;
+    overflow: auto;
+    border: 1px solid black;
+    border-radius: 5px;
+}
