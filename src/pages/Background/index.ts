@@ -13,8 +13,8 @@ chrome.action.onClicked.addListener(() => {
         chrome.windows.create({
             url: chrome.runtime.getURL('popup.html'),
             type: 'popup',
-            width: 1050,
-            height: 650
+            width: 1200,
+            height: 700
         }, (window) => {
             popupWindowId = (window as chrome.windows.Window).id;
 
