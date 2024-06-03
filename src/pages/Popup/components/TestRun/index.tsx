@@ -54,7 +54,7 @@ export const TestRunComponent = ({testCase}: TestRunProps) => {
         return () => {
             chrome.runtime.onMessage.removeListener(handleMessage);
         }
-    }, []);
+    }, [testCase]);
 
     return (
         <Box
@@ -62,7 +62,7 @@ export const TestRunComponent = ({testCase}: TestRunProps) => {
                 display: 'flex',
                 flexDirection: 'column',
                 m: 'auto',
-                width: 'fit-content',
+                maxWidth: '750px',
             }}
         >
             <Typography variant='h6' align='center'>Run of Test Case: {testCase.title}</Typography>
@@ -106,8 +106,8 @@ export const TestRunComponent = ({testCase}: TestRunProps) => {
                 <Typography key={index}>{log}</Typography>
             )}
             {testRun?.screenshot &&
-                <Box sx={{maxWidth: '800px', overflow: 'auto'}}><img src={testRun.screenshot}
-                                                                      alt="screenshot"/></Box>}
+                <img style={{maxWidth: '750px', height: 'auto'}} src={testRun.screenshot}
+                     alt="screenshot"/>}
         </Box>
     );
 }

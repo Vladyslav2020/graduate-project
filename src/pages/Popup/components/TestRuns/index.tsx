@@ -1,6 +1,6 @@
 import React from "react";
 import {CustomTableCell} from "../CustomTableCell";
-import {formatDuration, getTestRunBackgroundColor, getTestStepIconColor} from "../../utils";
+import {capitalizeFirstLetter, formatDuration, getTestRunBackgroundColor, getTestStepIconColor} from "../../utils";
 import {Box, Table, TableBody, TableHead, TableRow, Typography} from "@mui/material";
 import {TestCase} from "../../interfaces/TestCase";
 import {TestRunStatusIcon} from "../TestRunStatusIcon";
@@ -11,6 +11,7 @@ import {
     Legend,
     Line,
     LineChart,
+    ReferenceLine,
     ResponsiveContainer,
     Tooltip,
     XAxis,
@@ -28,16 +29,23 @@ type TestRunProps = {
 export const TestRuns = ({testCase}: TestRunProps) => {
     const dispatch = useDispatch();
 
-    const runStatus = testCase.runs.reduce((acc, run) => {
+    const runStatus2Count = testCase.runs.reduce((acc, run) => {
         const group = acc[run.status] || 0;
         acc[run.status] = group + 1;
         return acc;
     }, {});
 
-    const statusData = [{name: 'status', ...runStatus}];
+    const statusData = [{name: 'status', ...runStatus2Count}];
 
     const runDurationData = testCase.runs.filter(run => run.duration)
         .map(run => ({start: run.start.toLocaleString(), duration: run.duration}));
+
+    const calculateMeanDuration = (runs) => {
+        const sum = runs.reduce((acc, run) => acc + (run.duration ? run.duration : 0), 0);
+        return sum / runs.length;
+    };
+
+    const meanDuration = testCase.runs.length > 1 ? calculateMeanDuration(testCase.runs) : 0;
 
     const openTestRun = (testRun: TestRun) => {
         dispatch({type: SET_TEST_RUN, testRun});
@@ -46,7 +54,8 @@ export const TestRuns = ({testCase}: TestRunProps) => {
     return (
         <Box>
             <Typography variant='h6' align='center'>Runs of Test Case: {testCase.title}</Typography>
-            {testCase.runs.length === 0 && <Typography variant='body1' align='center' sx={{color: 'gray'}}>No runs yet</Typography>}
+            {testCase.runs.length === 0 &&
+                <Typography variant='body1' align='center' sx={{color: 'gray'}}>No runs yet</Typography>}
             {testCase.runs.length > 0 && <Table sx={{minWidth: '650px'}} aria-label="test runs">
                 <TableHead>
                     <TableRow>
@@ -79,6 +88,11 @@ export const TestRuns = ({testCase}: TestRunProps) => {
                     )}
                 </TableBody>
             </Table>}
+            {testCase.runs.length > 1 && <Typography>Mean duration: {formatDuration(meanDuration)}</Typography>}
+            {Object.getOwnPropertyNames(runStatus2Count).map((status, index) => <div key={index}><Typography
+                sx={{color: getTestStepIconColor({status: status}), display: 'inline'}}>{capitalizeFirstLetter(status)}</Typography>
+                <Typography sx={{display: 'inline'}}>: {runStatus2Count[status]}</Typography>
+            </div>)}
             {testCase.runs.length > 0 && <Box sx={{display: 'flex'}}>
                 <ResponsiveContainer width='40%' height={400}>
                     <BarChart margin={{top: 20}} data={statusData}>
@@ -87,7 +101,7 @@ export const TestRuns = ({testCase}: TestRunProps) => {
                         <YAxis/>
                         <Tooltip/>
                         <Legend/>
-                        {Object.getOwnPropertyNames(runStatus).map((name, index) => (
+                        {Object.getOwnPropertyNames(runStatus2Count).map((name, index) => (
                             <Bar key={index} dataKey={name}
                                  fill={getTestStepIconColor({status: name})}/>
                         ))}
@@ -101,6 +115,8 @@ export const TestRuns = ({testCase}: TestRunProps) => {
                         <Tooltip/>
                         <Legend/>
                         <Line type="monotone" dataKey="duration" stroke="#8884d8"/>
+                        {testCase.runs.length > 1 &&
+                            <ReferenceLine y={meanDuration} stroke="#f57d05"/>}
                     </LineChart>
                 </ResponsiveContainer>
             </Box>}

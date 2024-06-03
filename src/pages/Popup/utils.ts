@@ -52,5 +52,12 @@ export const getTestRunBackgroundColor = (item: any) => {
 export const formatDuration = (durationInMillis: number): string => {
     const totalSeconds = Math.floor(durationInMillis / 1000);
     const milliseconds = durationInMillis % 1000;
-    return `${totalSeconds}:${milliseconds.toString().padStart(3, '0')}`;
+    return `${totalSeconds}:${Math.round(milliseconds).toString().padStart(3, '0')}`;
+}
+
+export const capitalizeFirstLetter = (word: string) => {
+    if (!word) {
+        return '';
+    }
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
 }

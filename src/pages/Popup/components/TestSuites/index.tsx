@@ -300,7 +300,7 @@ export const TestSuites = () => {
     }
 
     return (
-        <div style={{padding: '0 20px', minWidth: '300px'}}>
+        <div style={{padding: '0 20px', minWidth: '352px'}}>
             <div>
                 <div style={{
                     display: 'flex',
@@ -348,10 +348,14 @@ export const TestSuites = () => {
                                         {expandedTestSuites.includes(testSuite.id) ? <KeyboardArrowDownRoundedIcon/> :
                                             <ChevronRightRoundedIcon/>}
                                     </IconButton>
-                                    <Typography> {testSuite.title}</Typography>
+                                    <Typography title={testSuite.title} noWrap sx={{
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        maxWidth: '140px',
+                                    }}>{testSuite.title}</Typography>
                                 </div>
-                                <div>
-                                    <IconButton title='Export test suite' sx={{marginLeft: '20px'}}
+                                <div style={{width: '178px'}}>
+                                    <IconButton title='Export test suite'
                                                 onClick={() => exportTestSuite(testSuite)}
                                                 color='primary'><PublishRoundedIcon/></IconButton>
                                     <Button size='small' variant="text"
@@ -376,8 +380,9 @@ export const TestSuites = () => {
                                             textTransform: 'none',
                                             backgroundColor: activeTestCase?.id === testCase.id ? '#eaeaea' : 'inherit',
                                         }}>
-                                            <Typography>{testCase.title}</Typography>
-                                            <div>
+                                            <Typography title={testCase.title} noWrap
+                                                        sx={{maxWidth: '200px'}}>{testCase.title}</Typography>
+                                            <div style={{width: '80px'}}>
                                                 <IconButton title='View statistics'
                                                             onClick={(event) => handleShowRuns(event, testSuite, testCase)}><ShowChartRoundedIcon/></IconButton>
                                                 <IconButton title='More actions'
