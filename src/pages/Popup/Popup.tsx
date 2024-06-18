@@ -10,7 +10,7 @@ import {TestRun, TestRunStatus} from "./interfaces/TestRun";
 import {TestCase} from "./interfaces/TestCase";
 import {generateUniqueId} from "./utils";
 import {TestRuns} from "./components/TestRuns";
-import {TestSuite} from "./interfaces/classes";
+import {TestSuite} from "./interfaces/TestSuite";
 
 export const Popup = () => {
     const activeTestSuite = useSelector((state: RootState) => state.root.activeTestSuite);
@@ -27,7 +27,7 @@ export const Popup = () => {
             id: generateUniqueId(),
             status: TestRunStatus.RUNNING,
             steps: [...testCase.steps.map(step => ({...step, status: TestRunStatus.UNKNOWN}))],
-            start: new Date(),
+            start: new Date().toISOString(),
             logs: [],
         };
         return newTestRun;
@@ -46,7 +46,7 @@ export const Popup = () => {
         if (!activeTestSuite) {
             return;
         }
-        const testSuite = testSuites.find(suite => suite.id === activeTestSuite.id) as TestSuite;
+        const testSuite = testSuites.find(suite => suite.id === activeTestSuite.id) as unknown as TestSuite;
         const waitForTestRunFinish = () => {
             return new Promise<void>((resolve) => {
                 const handleTestRunFinished = (message) => {

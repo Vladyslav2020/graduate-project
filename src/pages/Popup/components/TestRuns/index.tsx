@@ -38,7 +38,7 @@ export const TestRuns = ({testCase}: TestRunProps) => {
     const statusData = [{name: 'status', ...runStatus2Count}];
 
     const runDurationData = testCase.runs.filter(run => run.duration)
-        .map(run => ({start: run.start.toLocaleString(), duration: run.duration}));
+        .map(run => ({start: new Date(run.start).toLocaleString(), duration: run.duration}));
 
     const calculateMeanDuration = (runs) => {
         const sum = runs.reduce((acc, run) => acc + (run.duration ? run.duration : 0), 0);
@@ -76,7 +76,7 @@ export const TestRuns = ({testCase}: TestRunProps) => {
                             onClick={() => openTestRun(run)}
                         >
                             <CustomTableCell>{index + 1}</CustomTableCell>
-                            <CustomTableCell>{run.start.toLocaleString()}</CustomTableCell>
+                            <CustomTableCell>{new Date(run.start).toLocaleString()}</CustomTableCell>
                             <CustomTableCell>{!run.duration ? 'unknown' : formatDuration(run.duration)}</CustomTableCell>
                             <CustomTableCell>
                                 <div style={{

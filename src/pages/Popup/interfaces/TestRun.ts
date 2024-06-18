@@ -3,7 +3,7 @@ export interface TestRun {
     id: string;
     steps: TestRunStep[];
     status: TestRunStatus;
-    start: Date;
+    start: string;
     duration?: number;
     logs: string[];
     screenshot?: string;
