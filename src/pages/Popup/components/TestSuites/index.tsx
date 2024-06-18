@@ -271,7 +271,10 @@ export const TestSuites = () => {
     }
 
     const handleImportFile = (event) => {
-        const file = event.target.files[0];
+        const file = event.target.files?.[0];
+        if (!file) {
+            return;
+        }
         const reader = new FileReader();
         reader.onload = (e: any) => {
             if (!e.target.result) {
@@ -295,6 +298,7 @@ export const TestSuites = () => {
                 type: SET_TEST_SUITES,
                 testSuites: [...testSuites, newTestSuite],
             });
+            event.target.value = '';
         };
         reader.readAsText(file);
     }
