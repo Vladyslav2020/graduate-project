@@ -31,78 +31,8 @@ export interface TestSuitesState {
 
 type Page = 'testSuites' | 'testCases' | 'runs' | 'run';
 
-const initialTestSuitesState: TestSuitesState = {
-    testSuites: [{
-        id: 'test-suite-1', title: 'Test Suite 1', testCases: [{
-            id: '1', title: 'Test case 1', runs: [], steps: [
-                {
-                    "id": "0",
-                    "name": "open",
-                    "element": "https://todomvc.com/examples/react/dist/",
-                    "value": ""
-                },
-                {
-                    "id": "1",
-                    "name": "click",
-                    "element": "/html[1]/body[1]/div[1]/div[2]/div[1]/input[1]",
-                    "value": ""
-                },
-                {
-                    "id": "2",
-                    "name": "type",
-                    "element": "/html[1]/body[1]/div[1]/div[2]/div[1]/input[1]",
-                    "value": "type 1"
-                },
-                {
-                    "id": "3",
-                    "name": "pressKey",
-                    "element": "/html[1]/body[1]/div[1]/div[2]/div[1]/input[1]",
-                    "value": "${enter}"
-                },
-                {
-                    "id": "4",
-                    "name": "click",
-                    "element": "/html[1]/body[1]/div[1]/div[2]/div[2]/div[1]/div[1]",
-                    "value": ""
-                },
-                {
-                    "id": "5",
-                    "name": "click",
-                    "element": "/html[1]/body[1]/div[1]/div[2]/div[1]/input[1]",
-                    "value": ""
-                },
-                {
-                    "id": "6",
-                    "name": "type",
-                    "element": "/html[1]/body[1]/div[1]/div[2]/div[1]/input[1]",
-                    "value": "insert"
-                }, {
-                    "id": "6_1",
-                    "name": "verifyValue",
-                    "element": "/html[1]/body[1]/div[1]/div[2]/div[1]/input[1]",
-                    "value": "insert1"
-                },
-                {
-                    "id": "7",
-                    "name": "pressKey",
-                    "element": "/html[1]/body[1]/div[1]/div[2]/div[1]/input[1]",
-                    "value": "${enter}"
-                },
-                {
-                    "id": "8",
-                    "name": "click",
-                    "element": "/html[1]/body[1]/div[1]/div[2]/div[2]/div[2]/div[1]",
-                    "value": ""
-                },
-                {
-                    "id": "9",
-                    "name": "click",
-                    "element": "/html[1]/body[1]/div[1]/div[2]/div[3]/div[3]/div[1]",
-                    "value": ""
-                }
-            ]
-        }]
-    }],
+export const initialTestSuitesState: TestSuitesState = {
+    testSuites: [],
     activeTestSuite: null,
     activeTestCase: null,
     activeTestRun: null,
@@ -232,7 +162,7 @@ const testSuitesReducer = (state: TestSuitesState = initialTestSuitesState, acti
                         runs: testCase.runs.map(run => run.id === state.activeTestRun?.id ? {
                             ...run,
                             status: action.status,
-                            duration: new Date().getTime() - run.start.getTime(),
+                            duration: new Date().getTime() - new Date(run.start).getTime(),
                             logs: [...run.logs, action.logs],
                             screenshot: action.screenshot,
                         } : run),
@@ -241,7 +171,7 @@ const testSuitesReducer = (state: TestSuitesState = initialTestSuitesState, acti
                 activeTestRun: {
                     ...state.activeTestRun,
                     status: action.status,
-                    duration: new Date().getTime() - (state.activeTestRun as TestRun).start.getTime(),
+                    duration: new Date().getTime() - new Date((state.activeTestRun as TestRun).start).getTime(),
                     logs: [...(state.activeTestRun as TestRun).logs, action.logs],
                     screenshot: action.screenshot,
                 },

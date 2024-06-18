@@ -4,11 +4,15 @@ import {Provider} from 'react-redux';
 
 import './index.css';
 import {Popup} from "./Popup";
-import store from "./redux/Store";
+import {initializeStore} from "./redux/Store";
 
 const container = document.getElementById('root') as HTMLElement;
 const root = createRoot(container);
 
-root.render(<Provider store={store}>
-    <Popup/>
-</Provider>);
+initializeStore().then(store => {
+    console.log('store', store);
+    root.render(<Provider store={store}>
+        <Popup/>
+    </Provider>);
+})
+
