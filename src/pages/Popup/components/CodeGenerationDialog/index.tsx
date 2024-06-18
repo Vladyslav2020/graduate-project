@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField} from '@mui/material';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
@@ -20,11 +20,14 @@ type CodeGenerationDialogProps = {
     setOpen: (open: boolean) => void;
 };
 
-export const CodeGenerationDialog = ({testCase, open, setOpen}: CodeGenerationDialogProps) => {
-    const [generatedCode, setGeneratedCode] = useState(`\`\`\`javascript
+const initialCode = `\`\`\`javascript
 // code will be generated here
-\`\`\``);
+\`\`\``;
+
+export const CodeGenerationDialog = ({testCase, open, setOpen}: CodeGenerationDialogProps) => {
+    const [generatedCode, setGeneratedCode] = useState(initialCode);
     const [codeGenerating, setCodeGenerating] = useState(false);
+    const [codeGenerationFinished, setCodeGenerationFinished] = useState(false);
     const [language, setLanguage] = useState('JavaScript');
     const codeFieldRef = useRef<HTMLDivElement>(null);
 
@@ -32,10 +35,13 @@ export const CodeGenerationDialog = ({testCase, open, setOpen}: CodeGenerationDi
         setOpen(false);
     };
 
+    const cleanedCode = useMemo(() => generatedCode.replace(/```javascript|```/g, '').trim(), [generatedCode]);
+
     const handleGenerate = async () => {
         setCodeGenerating(true);
         await aiGenerationService.getCodeForTestCase(testCase, setGeneratedCode);
         setCodeGenerating(false);
+        setCodeGenerationFinished(true);
     };
 
     useEffect(() => {
@@ -83,7 +89,7 @@ export const CodeGenerationDialog = ({testCase, open, setOpen}: CodeGenerationDi
                      mt={2} position="relative">
                     <ReactMarkdown className='code-snippet' remarkPlugins={[remarkGfm, remarkHighlight as any]}
                                    components={components}>{generatedCode}</ReactMarkdown>
-                    <CopyToClipboard text={generatedCode}>
+                    <CopyToClipboard text={cleanedCode}>
                         <IconButton title='Copy to Clipboard' sx={{
                             position: 'absolute',
                             top: '8px',
@@ -96,7 +102,7 @@ export const CodeGenerationDialog = ({testCase, open, setOpen}: CodeGenerationDi
             </DialogContent>
             <DialogActions>
                 <Button variant="contained" disabled={codeGenerating} onClick={handleGenerate}>
-                    Generate
+                    {codeGenerationFinished ? 'Regenerate' : 'Generate'}
                 </Button>
                 <Button variant="outlined" onClick={handleClose}>
                     Close
